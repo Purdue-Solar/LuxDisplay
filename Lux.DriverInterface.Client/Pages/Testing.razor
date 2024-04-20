@@ -1,0 +1,323 @@
+﻿@page "/testing"
+@using BlazorBootstrap;
+@using Lux.DriverInterface.Shared;
+@using static Lux.DriverInterface.Shared.Shared;
+@inject TimerService TimerService;
+@inject Header header
+@inject HttpClient Http
+@inject WaveSculptor ws
+@inject EMU emu
+@inject NavigationManager NavigationManager
+<PageTitle>Testing</PageTitle>
+<div style="display:grid">
+    <table>
+        <tr>
+            <td style="width:25%">
+                @if (blinkerValLeft && header.BlinkerToggleLeft)
+                {
+                    <h1 style="font-size:70px"><Icon Name="IconName.ArrowLeftCircleFill" /></h1>
+                }
+                else
+                {
+                    <h1 style="font-size:70px"><Icon Name="IconName.ArrowLeftCircleFill" Color="IconColor.Muted" /></h1>
+                }
+            </td>
+            <td style="width:25%">
+                <h1>@(ws.Critical.Vehicle_Velocity)</h1> <h4>MPH</h4>
+            </td>
+            <td style="width:25%">
+                <h1>@(ws.Critical.Motor_Velocity)</h1> <h4>RPM</h4>
+            </td>
+            <td style="width:25%">
+                @if (blinkerValRight && header.BlinkerToggleRight)
+                {
+                    <h1 style="font-size:70px;display:inline"><Icon Name="IconName.ArrowRightCircleFill" /></h1>
+                }
+                else
+                {
+                    <h1 style="font-size:70px;display:inline"><Icon Name="IconName.ArrowRightCircleFill" Color="IconColor.Muted" /></h1>
+                }
+
+                <h1 style="font-size:30px;display:inline"><Icon Name="IconName.Square" Color="IconColor.White" /></h1>
+                @if(header.Headlights)
+                {
+                    <h1 style="font-size:50px;display:inline"><Icon Name="IconName.SunFill" Color="IconColor.Info" /></h1>
+                }
+                else
+                {
+                    <h1 style="font-size:50px;display:inline"><Icon Name="IconName.SunFill" Color="IconColor.Muted" /></h1>
+                }
+
+                @if (header.Hazard)
+                {
+                    <h1 style="font-size:50px;display:inline"><Icon Name="IconName.ExclamationTriangleFill" Color="IconColor.Warning" /></h1>
+                }
+                else
+                {
+                    <h1 style="font-size:50px;display:inline"><Icon Name="IconName.ExclamationTriangle" Color="IconColor.Muted" /></h1>
+                }
+
+                @if (header.Overheat)
+                {
+                    <h1 style="font-size:50px;display:inline"><Icon Name="IconName.ThermometerHigh" Color="IconColor.Danger" /></h1>
+                }
+                else
+                {
+                    <h1 style="font-size:50px;display:inline"><Icon Name="IconName.ThermometerHigh" Color="IconColor.Muted" /></h1>
+                }
+
+                @if (header.HeartbeatFailure)
+                {
+                    <h1 style="font-size:50px;display:inline"><Icon Name="IconName.Activity" Color="IconColor.Danger" /></h1>
+                }
+                else
+                {
+                    <h1 style="font-size:50px;display:inline"><Icon Name="IconName.Activity" Color="IconColor.Success" /></h1>
+                }
+            </td>
+        </tr>
+    </table>
+    @if (header.AlertFlagWarning)
+    {
+        <Alert Color="AlertColor.Warning"> A simple warning alert - check it out! </Alert>
+    }
+    @if (header.AlertFlagError)
+    {
+        <Alert Color="AlertColor.Danger"> A simple warning alert - check it out! </Alert>
+    }
+</div>
+<div style="display:grid">
+    <table>
+        <tr>
+            <td style="width:20%">
+                <article>
+                    <p>Speed: @(ws.Critical.Vehicle_Velocity)</p>
+                    <div>
+                        <Progress Class="mb-5" Height="40">
+                            <ProgressBar @ref="progressBarSpeed" Style="transition:none" />
+                        </Progress>
+                    </div>
+                </article>
+            </td>
+            <td style="width:20%">
+                <article>
+                    <p>RPM: @(ws.Critical.Motor_Velocity)</p>
+                    <div>
+                        <Progress Class="mb-5" Height="40">
+                            <ProgressBar @ref="progressBarRPM" Style="transition:none" />
+                        </Progress>
+                    </div>
+                </article>
+            </td>
+        </tr>
+    </table>
+    <table>
+        <tr>
+            <td style="vertical-align:top">
+                <h3 style="text-align:center">Motor Controller</h3>
+                <article style="text-align:center">
+                    <p style="display:inline-flex;font-size:20px">
+                        Bus Current:
+                    </p>
+                    <p style="display:inline-flex;font-size:20px">
+                        @(ws.Critical.Bus_Current) A
+                    </p>
+                    <br>
+                    <p style="display:inline-flex;font-size:20px">
+                        Bus Voltage:
+                    </p>
+                    <p style="display:inline-flex;font-size:20px">
+                        @(ws.Critical.Bus_Voltage) V
+                    </p>
+                    <br>
+                    <p style="display:inline-flex;font-size:20px">
+                        Heat Sink Temp:
+                    </p>
+                    <p style="display:inline-flex;font-size:20px">
+                        @(ws.Critical.Heat_Sink_Temp) C
+                    </p>
+                    <br>
+                    <p style="display:inline-flex;font-size:20px">
+                        Heat Sink Temp:
+                    </p>
+                    <p style="display:inline-flex;font-size:20px">
+                        @(ws.Critical.Heat_Sink_Temp) C
+                    </p>
+                </article>
+            </td>
+            <td style="vertical-align:top">
+                <h3 style="text-align:center">MPPT</h3>
+                <article style="text-align:center">
+                    <p style="display:inline-flex;font-size:20px">
+                        Bus Current:
+                    </p>
+                    <p style="display:inline-flex;font-size:20px">
+                        @(ws.Critical.Bus_Current) A
+                    </p>
+                    <br>
+                    <p style="display:inline-flex;font-size:20px">
+                        Bus Voltage:
+                    </p>
+                    <p style="display:inline-flex;font-size:20px">
+                        @(ws.Critical.Bus_Voltage) V
+                    </p>
+                    <br>
+                    <p style="display:inline-flex;font-size:20px">
+                        Heat Sink Temp:
+                    </p>
+                    <p style="display:inline-flex;font-size:20px">
+                        @(ws.Critical.Heat_Sink_Temp) C
+                    </p>
+                    <br>
+                    <p style="display:inline-flex;font-size:20px">
+                        Heat Sink Temp:
+                    </p>
+                    <p style="display:inline-flex;font-size:20px">
+                        @(ws.Critical.Heat_Sink_Temp) C
+                    </p>
+                </article>
+            </td>
+            <td style="vertical-align:top">
+                <h3 style="text-align:center">EMU BMS</h3>
+                <article style="text-align:center">
+                    <p style="display:inline-flex;font-size:20px">
+                        Total Discharge Energy:
+                    </p>
+                    <p style="display:inline-flex;font-size:20px">
+                        @(emu.Critical.Total_Discharge_Energy) Wh
+                    </p>
+                    <br>
+                    <p style="display:inline-flex;font-size:20px">
+                        Total Charge Energy:
+                    </p>
+                    <p style="display:inline-flex;font-size:20px">
+                        @(emu.Critical.Total_Charge_Energy) Wh
+                    </p>
+                    <br>
+                    <p style="display:inline-flex;font-size:20px">
+                        Min Pack Voltage:
+                    </p>
+                    <p style="display:inline-flex;font-size:20px">
+                        @(emu.Critical.Min_Pack_Voltage) V
+                    </p>
+                    <br>
+                    <p style="display:inline-flex;font-size:20px">
+                        Max Pack Voltage:
+                    </p>
+                    <p style="display:inline-flex;font-size:20px">
+                        @(emu.Critical.Max_Pack_Voltage) C
+                    </p>
+                    <br>
+                    <p style="display:inline-flex;font-size:20px">
+                        Min cell Temp:
+                    </p>
+                    <p style="display:inline-flex;font-size:20px">
+                        @(emu.Critical.Min_Cell_Temp) C
+                    </p>
+                    <br>
+                    <p style="display:inline-flex;font-size:20px">
+                        Max Cell Temp:
+                    </p>
+                    <p style="display:inline-flex;font-size:20px">
+                        @(emu.Critical.Max_Cell_Temp) C
+                    </p>
+                </article>
+            </td>
+        </tr>
+    </table>
+</div>
+@code {
+    ProgressBar progressBarSpeed;
+    ProgressBar progressBarRPM;
+
+    private int datasetsCount;
+    private int labelsCount;
+
+    public int timerCount = 0;
+
+    private bool blinkerValLeft = false;
+    private bool blinkerValRight = false;
+
+    private async void OnTimerElapsed(object sender, int count)
+    {
+        timerCount = count;
+
+        if (count % 4 == 0)
+        {
+            UpdateProgressBar(progressBarSpeed, 0, 100, ((int)ws.Critical.Vehicle_Velocity));
+            UpdateProgressBar(progressBarRPM, 0, 1000, ((int)ws.Critical.Motor_Velocity));
+        }
+
+        //Sinals
+        if (timerCount % 25 == 0)
+        {
+            //Left siganl
+            if (header.BlinkerToggleLeft)
+            {
+                blinkerValLeft = !blinkerValLeft;
+            }
+            //Right signal
+            if (header.BlinkerToggleRight)
+            {
+                blinkerValRight = !blinkerValRight;
+            }
+        }
+        if(timerCount % 10 == 0)
+        {
+            ws.Critical = await Http.GetFromJsonAsync<WaveSculptor.WaveSculptorCritical>("/api/WaveSculptorCritical") ?? throw new Exception("Null Value Received for ws.Critical");
+            header = await Http.GetFromJsonAsync<Header>("/api/Header") ?? throw new Exception("Null Value Received for header");
+            emu.Critical = await Http.GetFromJsonAsync<EMU.EMUCritical>("/api/EMUCritical") ?? throw new Exception("Null Value Received for emu.Critical");
+        }
+        StateHasChanged(); // Update the UI
+    }
+
+    // Not called On page change, but called when the component is no longer needed
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        TimerService.OnTimerElapsed -= OnTimerElapsed;
+        TimerService.Dispose();
+    }
+    protected override void OnInitialized()
+    {
+        TimerService.OnTimerElapsed += OnTimerElapsed;
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    async void OnLocationChanged(object sender, LocationChangedEventArgs args)
+    {
+        TimerService.OnTimerElapsed -= OnTimerElapsed;
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        string navigationMethod = args.IsNavigationIntercepted ? "HTML" : "code";
+    }
+
+    /*
+    @brief This updates the color and label of an progress given an appropriate value to update
+    @param progressBar: progressbar to be updated, min: minimum value of bar, max: maximum value of bar, val: value to be updated
+    @return None
+    */
+    public void UpdateProgressBar(ProgressBar progressBar, int min, int max, int val)
+    {
+        //check for values outside of range
+        if (val > max || val < min)
+        {
+            return;
+        }
+
+        progressBar.SetWidth((val * 100) / (max - min));
+
+        //Set colors based on amount of bar used
+        if (val > ((max - min) * .8))
+        {
+            progressBar.SetColor(ProgressColor.Warning);
+        }
+        else if (val > ((max - min) * .9))
+        {
+            progressBar.SetColor(ProgressColor.Danger); //This does not work?
+        }
+        else
+        {
+            progressBar.SetColor(ProgressColor.Success);
+        }
+    }
+}

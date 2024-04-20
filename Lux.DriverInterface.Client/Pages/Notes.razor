@@ -1,0 +1,110 @@
+﻿@page "/Notes"
+@inject Header helper;
+@inject TimerService TimerService;
+@inject NavigationManager NavigationManager;
+@using BlazorBootstrap;
+@using Lux.DriverInterface.Shared;
+
+
+<PageTitle>Notes</PageTitle>
+<div style="display:grid">
+    <table>
+        <tr>
+            <td style="width:25%">
+                @if (blinkerValLeft && helper.BlinkerToggleLeft)
+                {
+                    <h1 style="font-size:70px"><Icon Name="IconName.ArrowLeftCircleFill" /></h1>
+                }
+                else
+                {
+                    <h1 style="font-size:70px"><Icon Name="IconName.ArrowLeftCircleFill" Color="IconColor.Muted" /></h1>
+                }
+            </td>
+            <td style="width:25%">
+                <h1>@(helper.Speed)</h1> <h4>MPH</h4>
+            </td>
+            <td style="width:25%">
+                <h1>@(helper.RPM)</h1> <h4>RPM</h4>
+            </td>
+            <td style="width:25%">
+                @if (blinkerValRight && helper.BlinkerToggleRight)
+                {
+                    <h1 style="font-size:70px"><Icon Name="IconName.ArrowRightCircleFill" /></h1>
+                }
+                else
+                {
+                    <h1 style="font-size:70px"><Icon Name="IconName.ArrowRightCircleFill" Color="IconColor.Muted" /></h1>
+                }
+            </td>
+        </tr>
+    </table>
+</div>
+<h1>Notes</h1>
+
+Regular Note Size<br>
+1. Item 1
+
+<Callout Type = "CalloutType.Info" Heading="Important">
+    Remember to declerate around 3 pm to conserve power.
+</Callout>
+
+<Callout Type="CalloutType.Warning" Heading="Warning">
+    <strong>Need to change drivers in 10 minutes</strong>.
+</Callout>
+
+<Callout Type="CalloutType.Danger" Heading="Danger">
+    <strong>Signs of thunder around 5 pm</strong>: Stop around 4:45 pm for safety.
+</Callout>
+
+<Callout>
+    <h4>Large Notes</h4>
+    <p>Check the motor rpm in the <code>Motor</code> sidepanel every 5 minutes.</p>
+</Callout>
+
+@code
+{
+    public int timerCount = 0;
+
+    private bool blinkerValLeft = false;
+    private bool blinkerValRight = false;
+
+    private void OnTimerElapsed(object sender, int count)
+    {
+        timerCount = count;
+
+        //Sinals
+        if (timerCount % 25 == 0)
+        {
+            //Left siganl
+            if (helper.BlinkerToggleLeft)
+            {
+                blinkerValLeft = !blinkerValLeft;
+            }
+            //Right signal
+            if (helper.BlinkerToggleRight)
+            {
+                blinkerValRight = !blinkerValRight;
+            }
+        }
+        StateHasChanged(); // Update the UI
+    }
+
+    // Don't forget to unsubscribe from the event when the component is disposed.
+    public void Dispose()
+    {
+        TimerService.OnTimerElapsed -= OnTimerElapsed;
+        TimerService.Dispose();
+    }
+    protected override void OnInitialized()
+    {
+        TimerService.OnTimerElapsed += OnTimerElapsed;
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    async void OnLocationChanged(object sender, LocationChangedEventArgs args)
+    {
+        TimerService.OnTimerElapsed -= OnTimerElapsed;
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        string navigationMethod = args.IsNavigationIntercepted ? "HTML" : "code";
+    }
+}

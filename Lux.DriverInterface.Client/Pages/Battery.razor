@@ -1,0 +1,341 @@
+@page "/Battery"
+@inject Header header;
+@inject WaveSculptor ws
+@inject TimerService TimerService;
+@inject HttpClient Http
+@inject EMU Emu
+@inject NavigationManager NavigationManager
+@using BlazorBootstrap;
+@using Lux.DriverInterface.Shared;
+
+<style>
+    body {
+        background-color: white;
+    }
+
+    h1 {
+        color: black;
+        text-align: center;
+    }
+
+    p {
+        color: black;
+    }
+
+    .container {
+        position: relative;
+    }
+
+    .maximum {
+        position: absolute;
+        height: 40px;
+        width: 200px;
+        background: white;
+        outline-width: thin;
+        outline-style: solid;
+        outline-color: black;
+        display: inline;
+    }
+
+    .battery-level {
+        position: absolute;
+        height: 40px;
+        width: 75%;
+        background: #32CD32;
+        text-align: center;
+    }
+
+    .voltage {
+        position: absolute;
+        height: 40px;
+        width: 100%;
+        background: #FFFFFF;
+        text-align: left;
+    }
+
+    .time {
+        position: absolute;
+        height: 40px;
+        width: 30%;
+        background: #11FAF5;
+        text-align: left;
+    }
+</style>
+<head>
+</head>
+<body>
+    <div style="display:grid">
+        <table>
+            <tr>
+                <td style="width:25%">
+                    @if (blinkerValLeft && header.BlinkerToggleLeft)
+                    {
+                        <h1 style="font-size:70px"><Icon Name="IconName.ArrowLeftCircleFill" /></h1>
+                    }
+                    else
+                    {
+                        <h1 style="font-size:70px"><Icon Name="IconName.ArrowLeftCircleFill" Color="IconColor.Muted" /></h1>
+                    }
+                </td>
+                <td style="width:25%">
+                    <h1>@(ws.Critical.Vehicle_Velocity)</h1> <h4>MPH</h4>
+                </td>
+                <td style="width:25%">
+                    <h1>@(ws.Critical.Motor_Velocity)</h1> <h4>RPM</h4>
+                </td>
+                <td style="width:25%">
+                    @if (blinkerValRight && header.BlinkerToggleRight)
+                    {
+                        <h1 style="font-size:70px"><Icon Name="IconName.ArrowRightCircleFill" /></h1>
+                    }
+                    else
+                    {
+                        <h1 style="font-size:70px"><Icon Name="IconName.ArrowRightCircleFill" Color="IconColor.Muted" /></h1>
+                    }
+                </td>
+            </tr>
+        </table>
+    </div>
+    <h1>Battery</h1>
+
+    <div class="container">
+        <article style="position: absolute; top: 420px; left: 0">
+            <p>Battery Charge</p>
+            <div>
+                <BlazorBootstrap.Progress Class="mb-3" Height="40" Style="width: 200px">
+                    <BlazorBootstrap.ProgressBar Color="BlazorBootstrap.ProgressColor.Success" Width="20" />
+                </BlazorBootstrap.Progress>
+            </div>
+            <p>XXX %</p>
+        </article>
+
+        <article style="position: absolute; top: 420px; left: 240px">
+            <p>Voltage</p>
+            <div>
+                <BlazorBootstrap.Progress Class="mb-3" Height="40" Style="width: 200px">
+                    <BlazorBootstrap.ProgressBar Color="BlazorBootstrap.ProgressColor.Warning" Width="100" />
+                </BlazorBootstrap.Progress>
+            </div>
+            <p>XXX Volts</p>
+        </article>
+
+        <article style="position: absolute; top: 420px; left: 480px">
+            <p>Estimated Time</p>
+            <div>
+                <BlazorBootstrap.Progress Class="mb-3" Height="40" Style="width: 200px">
+                    <BlazorBootstrap.ProgressBar Color="BlazorBootstrap.ProgressColor.Info" Width="60" />
+                </BlazorBootstrap.Progress>
+            </div>
+            <p>XX:XX:XX</p>
+        </article>
+
+        <article style="position: absolute; top: 420px; left: 720px">
+            <p>Total Discharge</p>
+            <div>
+                <BlazorBootstrap.Progress Class="mb-3" Height="40" Style="width: 200px">
+                    <BlazorBootstrap.ProgressBar Color="BlazorBootstrap.ProgressColor.Info" Width="60" />
+                </BlazorBootstrap.Progress>
+            </div>
+            <p>XX:XX:XX</p>
+        </article>
+
+        <article style="position: absolute; top: 620px; left: 0px">
+            <p>Total Charge</p>
+            <div>
+                <BlazorBootstrap.Progress Class="mb-3" Height="40" Style="width: 200px">
+                    <BlazorBootstrap.ProgressBar Color="BlazorBootstrap.ProgressColor.Info" Width="60" />
+                </BlazorBootstrap.Progress>
+            </div>
+            <p>XX:XX:XX</p>
+        </article>
+
+        <article style="position: absolute; top: 620px; left: 240px">
+            <p>Total Discharge Energy</p>
+            <div>
+                <BlazorBootstrap.Progress Class="mb-3" Height="40" Style="width: 200px">
+                    <BlazorBootstrap.ProgressBar Color="BlazorBootstrap.ProgressColor.Info" Width="60" />
+                </BlazorBootstrap.Progress>
+            </div>
+            <p>XX:XX:XX</p>
+        </article>
+
+        <article style="position: absolute; top: 620px; left: 480px">
+            <p>Total Charge Energy</p>
+            <div>
+                <BlazorBootstrap.Progress Class="mb-3" Height="40" Style="width: 200px">
+                    <BlazorBootstrap.ProgressBar Color="BlazorBootstrap.ProgressColor.Info" Width="60" />
+                </BlazorBootstrap.Progress>
+            </div>
+            <p>XX:XX:XX</p>
+        </article>
+
+        <article style="position: absolute; top: 620px; left: 720px">
+            <p>Cell Energy</p>
+            <div>
+                <BlazorBootstrap.Progress Class="mb-3" Height="40" Style="width: 200px">
+                    <BlazorBootstrap.ProgressBar Color="BlazorBootstrap.ProgressColor.Info" Width="60" />
+                </BlazorBootstrap.Progress>
+            </div>
+            <p>XX:XX:XX</p>
+        </article>
+    </div>
+
+</body>
+
+<LineChart @ref="lineChart" Width="800" Class="mb-4" />
+
+@code
+{
+    public int timerCount = 0;
+
+    private bool blinkerValLeft = false;
+    private bool blinkerValRight = false;
+
+    ProgressBar progress_totalDischarge;
+    ProgressBar progress_totalCharge;
+    ProgressBar progress_totalDischargeEnergy;
+    ProgressBar progress_totalChargeEnergy;
+    ProgressBar progress_cellEnergy;
+
+    private LineChart lineChart = default!;
+    private LineChartOptions lineChartOptions = default!;
+    private ChartData chartData = default!;
+
+    private async void OnTimerElapsed(object sender, int count)
+    {
+        timerCount = count;
+        //Progress Bars/Charts
+        if (count % 4 == 0)
+        {
+            //decide whether EMU critical requires charts/graphs
+        }
+        //Signals
+        if (timerCount % 25 == 0)
+        {
+            //Left siganl
+            if (header.BlinkerToggleLeft)
+            {
+                blinkerValLeft = !blinkerValLeft;
+            }
+            //Right signal
+            if (header.BlinkerToggleRight)
+            {
+                blinkerValRight = !blinkerValRight;
+            }
+        }
+
+        //Await data
+        if (timerCount % 10 == 0)
+        {
+            ws.Critical = await Http.GetFromJsonAsync<WaveSculptor.WaveSculptorCritical>("/api/WaveSculptorCritical") ?? throw new Exception("Null Value Received for ws.Critical");
+            header = await Http.GetFromJsonAsync<Header>("/api/Header") ?? throw new Exception("Null Value Received for header");
+        }
+
+
+        //var response = await Http.GetStringAsync(Shared.ApiUrl);
+        //Header _helper = Newtonsoft.Json.JsonConvert.DeserializeObject<Header>(response);
+
+        //helper.Speed = _helper.Speed;
+        //helper.RPM = _helper.RPM;
+        //helper.BlinkerToggleLeft = _helper.BlinkerToggleLeft;
+        //helper.BlinkerToggleRight = _helper.BlinkerToggleRight;
+        StateHasChanged(); // Update the UI
+    }
+
+    // Don't forget to unsubscribe from the event when the component is disposed.
+    public void Dispose()
+    {
+        TimerService.OnTimerElapsed -= OnTimerElapsed;
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        TimerService.Dispose();
+    }
+    protected override void OnInitialized()
+    {
+        TimerService.OnTimerElapsed += OnTimerElapsed;
+        NavigationManager.LocationChanged += OnLocationChanged;
+        //Line Chart Code
+        var colors = ColorBuilder.CategoricalTwelveColors;
+
+        var labels = new List<string> { "10:00", "11:00", "12:00", "13:00", "14:00", "15:00" };
+        var datasets = new List<IChartDataset>();
+
+        var dataset1 = new LineChartDataset
+        {
+            Label = "Current Cell Temperature",
+            Data = new List<double> { 10, 35, 20, 16, 8, 15, 20, 25, 30, 35, 21, 19},
+            BackgroundColor = new List<string> { colors[0] },
+            BorderColor = new List<string> { colors[0] },
+            BorderWidth = new List<double> { 2 },
+            HoverBorderWidth = new List<double> { 4 },
+            PointBackgroundColor = new List<string> { colors[0] },
+            PointRadius = new List<int> { 0 }, // hide points
+            PointHoverRadius = new List<int> { 4 }
+        };
+        datasets.Add(dataset1);
+
+        var dataset2 = new LineChartDataset
+        {
+            Label = "Minimum Cell Temperature",
+            Data = new List<double> { 10, 10, 10, 10, 8, 8, 8, 8, 8, 8, 8, 8 },
+            BackgroundColor = new List<string> { colors[1] },
+            BorderColor = new List<string> { colors[1] },
+            BorderWidth = new List<double> { 2 },
+            HoverBorderWidth = new List<double> { 4 },
+            PointBackgroundColor = new List<string> { colors[1] },
+            PointRadius = new List<int> { 0 }, // hide points
+            PointHoverRadius = new List<int> { 4 }
+        };
+        datasets.Add(dataset2);
+
+        var dataset3 = new LineChartDataset
+        {
+            Label = "Maximum Cell Temperature",
+            Data = new List<double> { 10, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35 },
+            BackgroundColor = new List<string> { colors[2] },
+            BorderColor = new List<string> { colors[2] },
+            BorderWidth = new List<double> { 2 },
+            HoverBorderWidth = new List<double> { 4 },
+            PointBackgroundColor = new List<string> { colors[2] },
+            PointRadius = new List<int> { 0 }, // hide points
+            PointHoverRadius = new List<int> { 4 }
+        };
+        datasets.Add(dataset3);
+
+        chartData = new ChartData
+        {
+            Labels = labels,
+            Datasets = datasets
+        };
+
+        lineChartOptions = new();
+        lineChartOptions.Responsive = true;
+        lineChartOptions.Interaction = new Interaction { Mode = InteractionMode.Index };
+
+        lineChartOptions.Scales.X.Title.Text = "Time";
+        lineChartOptions.Scales.X.Title.Display = true;
+
+        lineChartOptions.Scales.Y.Title.Text = "Temperature(C)";
+        lineChartOptions.Scales.Y.Title.Display = true;
+
+        lineChartOptions.Plugins.Title.Text = "Vehicle Cell Temperature";
+        lineChartOptions.Plugins.Title.Display = true;
+
+        //End line chart code
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await lineChart.InitializeAsync(chartData, lineChartOptions);
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    async void OnLocationChanged(object sender, LocationChangedEventArgs args)
+    {
+        TimerService.OnTimerElapsed -= OnTimerElapsed;
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        string navigationMethod = args.IsNavigationIntercepted ? "HTML" : "code";
+    }
+}

@@ -1,0 +1,142 @@
+﻿@page "/"
+@using BlazorBootstrap;
+@using Lux.DriverInterface.Shared;
+@using static Lux.DriverInterface.Shared.Shared;
+@inject TimerService TimerService;
+@inject Header header
+@inject HttpClient Http
+@inject WaveSculptor ws
+@inject EMU emu
+@inject NavigationManager NavigationManager
+@inject Encoder amt
+<PageTitle>Home</PageTitle>
+@(amt.Value & 0x3FFF)
+@(amt.Percentage)
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electric Car Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .speedometer {
+            display: inline-block;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 80px;
+            font-size:30px;
+            margin-bottom: 20px;
+        }
+        .speedometer .value {
+            font-size: 4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .speedometer .label {
+            font-size: 1.5em;
+        }
+        .speedometer .icon {
+            position: absolute;
+            bottom: -20px;
+            width: 50px;
+            height: 50px;
+            background-color: #ccc;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .speedometer .icon img {
+            max-width: 80%;
+            max-height: 80%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="border-color:Background">
+        <div class="speedometer">
+            <div class="value">60</div>
+            <div class="label">mph</div>
+        </div>
+        <div class="speedometer">
+            <div class="value">30</div>
+            <div class="label">kW</div>
+        </div>
+    </div>
+</body>
+
+
+@code {
+
+    private int datasetsCount;
+    private int labelsCount;
+
+    public int timerCount = 0;
+
+    private bool blinkerValLeft = false;
+    private bool blinkerValRight = false;
+
+    private async void OnTimerElapsed(object sender, int count)
+    {
+        timerCount = count;
+
+        //Sinals
+        if (timerCount % 25 == 0)
+        {
+            //Left siganl
+            if (header.BlinkerToggleLeft)
+            {
+                blinkerValLeft = !blinkerValLeft;
+            }
+            //Right signal
+            if (header.BlinkerToggleRight)
+            {
+                blinkerValRight = !blinkerValRight;
+            }
+        }
+        if(timerCount % 10 == 0)
+        {
+            ws.Critical = await Http.GetFromJsonAsync<WaveSculptor.WaveSculptorCritical>("/api/WaveSculptorCritical") ?? throw new Exception("Null Value Received for ws.Critical");
+            header = await Http.GetFromJsonAsync<Header>("/api/Header") ?? throw new Exception("Null Value Received for header");
+            emu.Critical = await Http.GetFromJsonAsync<EMU.EMUCritical>("/api/EMUCritical") ?? throw new Exception("Null Value Received for emu.Critical");
+            amt = await Http.GetFromJsonAsync<Encoder>("/api/Encoder") ?? throw new Exception("Null Value Received for amt");
+        }
+        StateHasChanged(); // Update the UI
+    }
+
+    // Not called On page change, but called when the component is no longer needed
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        TimerService.OnTimerElapsed -= OnTimerElapsed;
+        TimerService.Dispose();
+    }
+    protected override void OnInitialized()
+    {
+        TimerService.OnTimerElapsed += OnTimerElapsed;
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    async void OnLocationChanged(object sender, LocationChangedEventArgs args)
+    {
+        TimerService.OnTimerElapsed -= OnTimerElapsed;
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        string navigationMethod = args.IsNavigationIntercepted ? "HTML" : "code";
+    }
+}
