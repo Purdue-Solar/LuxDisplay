@@ -1,41 +1,52 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>disable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
 
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' ">
-    <ExternalConsole>true</ExternalConsole>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'http' ">
-    <ExternalConsole>true</ExternalConsole>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Controllers\launchSettings.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Blazor.Bootstrap" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.2" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.2" PrivateAssets="all" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="SocketCANSharp" Version="0.11.0" />
-  </ItemGroup>
+	<PropertyGroup>
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>full</DebugType>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Lux.DriverInterface.Shared\Lux.DriverInterface.Shared.csproj">
-      <ReferenceSourceTarget></ReferenceSourceTarget>
-      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
-    </ProjectReference>
-  </ItemGroup>
+	<PropertyGroup Condition=" '$(RunConfiguration)' == 'https' ">
+		<ExternalConsole>true</ExternalConsole>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(RunConfiguration)' == 'http' ">
+		<ExternalConsole>true</ExternalConsole>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<RunAOTCompilation>True</RunAOTCompilation>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<RunAOTCompilation>True</RunAOTCompilation>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Remove="Controllers\launchSettings.json" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Blazor.Bootstrap" Version="2.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.2" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.2" PrivateAssets="all" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="SocketCANSharp" Version="0.11.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <Content Update="Controllers\launchSettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Lux.DriverInterface.Shared\Lux.DriverInterface.Shared.csproj">
+			<ReferenceSourceTarget></ReferenceSourceTarget>
+			<GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+		</ProjectReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Update="Controllers\launchSettings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
 
 </Project>

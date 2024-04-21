@@ -6,7 +6,7 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:61248"
+      "applicationUrl": "https://localhost:5001"
     },
     "WSL": {
       "commandName": "WSL2",
