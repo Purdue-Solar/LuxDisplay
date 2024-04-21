@@ -8,6 +8,7 @@ on:
 
 env:
   PUBLISH_PATH: "/app"
+  DOTNET_ROOT: "/lib/dotnet"
 
 jobs:
 
