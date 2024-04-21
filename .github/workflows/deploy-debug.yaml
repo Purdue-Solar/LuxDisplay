@@ -19,3 +19,20 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: 8.0.x
+
+  deploy-web-app:
+    needs: install-dotnet
+    runs-on: self-hosted
+    environment: debug
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Restore Dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build Lux.DriverInterface.Server
+
+    - name: Publish
+      run: dotnet publish Lux.DriverInterface.Server --no-build --configuration Debug --output ${{ env.PUBLISH_PATH }}
+
