@@ -9,7 +9,7 @@ on:
 env:
   PUBLISH_PATH: "/app"
   DOTNET_ROOT: "/lib/dotnet"
-  DOTNET: ${{ env.DOTNET_ROOT }}/dotnet
+  DOTNET: "/lib/dotnet/dotnet"
 
 jobs:
 
