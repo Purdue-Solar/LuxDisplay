@@ -34,7 +34,7 @@ jobs:
         chown -R app:display ${{ env.PUBLISH_PATH }}
     - name: Start Services
       run: |
-        sudo systemctl restart lux-display-window
+        sudo systemctl restart lux-display
         sudo systemctl restart lux-display-window
     
 
