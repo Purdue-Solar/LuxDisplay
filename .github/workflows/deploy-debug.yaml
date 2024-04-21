@@ -9,6 +9,7 @@ on:
 env:
   PUBLISH_PATH: "/app"
   DOTNET_ROOT: "/lib/dotnet"
+  DOTNET: "/lib/dotnet/dotnet"
 
 jobs:
 
@@ -19,11 +20,11 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Restore Dependencies
-      run: dotnet restore
+      run: ${{ env.DOTNET }} restore
 
     - name: Build
-      run: dotnet build Lux.DriverInterface.Server
+      run: ${{ env.DOTNET }} build Lux.DriverInterface.Server
 
     - name: Publish
-      run: dotnet publish Lux.DriverInterface.Server --no-build --configuration Debug --output ${{ env.PUBLISH_PATH }}
+      run: ${{ env.DOTNET }} publish Lux.DriverInterface.Server --no-build --configuration Debug --output ${{ env.PUBLISH_PATH }}
 
