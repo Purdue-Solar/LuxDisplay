@@ -12,17 +12,7 @@ env:
 
 jobs:
 
-  install-dotnet:
-    runs-on: self-hosted
-    environment: release
-    steps:
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 8.0.x
-
   deploy-web-app:
-    needs: install-dotnet
     runs-on: self-hosted
     environment: debug
     steps:
