@@ -9,6 +9,7 @@
 	<PropertyGroup>
 		<DebugSymbols>true</DebugSymbols>
 		<DebugType>full</DebugType>
+		<OptimizationPreference>Speed</OptimizationPreference>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(RunConfiguration)' == 'https' ">
@@ -17,11 +18,12 @@
 	<PropertyGroup Condition=" '$(RunConfiguration)' == 'http' ">
 		<ExternalConsole>true</ExternalConsole>
 	</PropertyGroup>
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<RunAOTCompilation>False</RunAOTCompilation>
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<PublishAot>false</PublishAot>
+		<RunAOTCompilation>false</RunAOTCompilation>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<RunAOTCompilation>True</RunAOTCompilation>
+		<RunAOTCompilation>true</RunAOTCompilation>
 	</PropertyGroup>
 	<ItemGroup>
 		<None Remove="Controllers\launchSettings.json" />
@@ -35,18 +37,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Lux.DriverInterface.Shared\Lux.DriverInterface.Shared.csproj">
-			<ReferenceSourceTarget></ReferenceSourceTarget>
-			<GlobalPropertiesToRemove></GlobalPropertiesToRemove>
-		</ProjectReference>
-	</ItemGroup>
-
-	<ItemGroup>
-		<Content Update="Controllers\launchSettings.json">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-		</Content>
+		<ProjectReference Include="..\Lux.DriverInterface.Shared\Lux.DriverInterface.Shared.csproj" />
 	</ItemGroup>
 
 </Project>
