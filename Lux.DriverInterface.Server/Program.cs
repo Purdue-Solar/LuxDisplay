@@ -14,7 +14,7 @@ builder.Services.AddSingleton<Telemetry>();
 builder.Services.AddSingleton<Peripheral>(); //Not needed after the steering wheel gets implemented
 builder.Services.AddSingleton<Encoder>(); // Only necessary for testing
 builder.Services.AddHostedService<TestingDataIncrementService>();
-builder.Services.AddHostedService<CANSendService>();
+//builder.Services.AddHostedService<CANSendService>();
 
 
 //builder.Services.AddHostedService<EncoderService>();
