@@ -41,6 +41,7 @@ namespace Lux.DataRadio
 				rawCanSocket.Bind(can0);
 				while (await timer.WaitForNextTickAsync(stoppingToken))
 				{
+                    /*
 					using (SpiDevice device = SpiDevice.Create(settings))
 					{
 						// Send a byte and read the response
@@ -88,8 +89,34 @@ namespace Lux.DataRadio
 						rawCanSocket.Write(frame_drive);
 						rawCanSocket.Write(frame_power);
 					}
-				}
-			}
+					*/
+
+                    //Setting Motor Current
+
+                    byte[] message_drive = new byte[8];
+
+                    BinaryPrimitives.WriteSingleLittleEndian(message_drive.AsSpan().Slice(0, 4), 10000);
+                    BinaryPrimitives.WriteSingleLittleEndian(message_drive.AsSpan().Slice(4, 4), CurrentPercent);
+                    CanFrame frame_drive = new CanFrame();
+                    frame_drive.CanId = 0x501;
+                    frame_drive.Data = message_drive;
+                    frame_drive.Length = 8;
+                    frame_drive.Len8Dlc = 8;
+
+                    byte[] message_power = new byte[8];
+                    BinaryPrimitives.WriteSingleLittleEndian(message_power.AsSpan().Slice(0, 4), 0);
+                    BinaryPrimitives.WriteSingleLittleEndian(message_power.AsSpan().Slice(4, 4), 1f);
+                    CanFrame frame_power = new CanFrame();
+                    frame_power.CanId = 0x502;
+                    frame_power.Data = message_power;
+                    frame_power.Length = 8;
+                    frame_power.Len8Dlc = 8;
+                    //LuxDataRadio.Shared.CANQueue.Enqueue(frame);
+
+                    rawCanSocket.Write(frame_drive);
+                    rawCanSocket.Write(frame_power);
+                }
+            }
 		}
 	}
 }

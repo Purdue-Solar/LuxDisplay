@@ -27,5 +27,5 @@ namespace Lux.DriverInterface.Server.Controllers
 		{
 			return _ws;
 		}
-	}
+    }
 }

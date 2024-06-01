@@ -14,5 +14,10 @@ namespace Lux.DriverInterface.Server.Controllers
 		{
 			return _amt;
 		}
-	}
+        [HttpPost]
+        public void Post(float value)
+        {
+            _amt.Percentage = value;
+        }
+    }
 }

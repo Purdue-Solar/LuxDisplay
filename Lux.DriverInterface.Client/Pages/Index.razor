@@ -79,6 +79,10 @@
             <div class="label">kW</div>
         </div>
     </div>
+
+    <input @bind ="amt.Percentage" type="range" min="0" max="100">
+    @(amt.Percentage)
+
 </body>
 
 
@@ -115,7 +119,8 @@
             ws.Critical = await Http.GetFromJsonAsync<WaveSculptor.WaveSculptorCritical>("/api/WaveSculptorCritical") ?? throw new Exception("Null Value Received for ws.Critical");
             header = await Http.GetFromJsonAsync<Header>("/api/Header") ?? throw new Exception("Null Value Received for header");
             emu.Critical = await Http.GetFromJsonAsync<EMU.EMUCritical>("/api/EMUCritical") ?? throw new Exception("Null Value Received for emu.Critical");
-            amt = await Http.GetFromJsonAsync<Encoder>("/api/Encoder") ?? throw new Exception("Null Value Received for amt");
+            //amt = await Http.GetFromJsonAsync<Encoder>("/api/Encoder") ?? throw new Exception("Null Value Received for amt");
+            await Http.PostAsJsonAsync("/api/Encoder", new { value = amt.Percentage });
         }
         StateHasChanged(); // Update the UI
     }
