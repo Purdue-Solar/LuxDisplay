@@ -17,7 +17,7 @@ builder.Services.AddHostedService<TestingDataIncrementService>();
 //builder.Services.AddHostedService<CANSendService>();
 
 
-//builder.Services.AddHostedService<EncoderService>();
+builder.Services.AddHostedService<EncoderService>();
 
 builder.Services.AddBlazorBootstrap(); // Add this line
 builder.Services.AddRazorPages();
