@@ -96,8 +96,8 @@ namespace Lux.DataRadio
 
                     byte[] message_drive = new byte[8];
 
-                    BinaryPrimitives.WriteSingleLittleEndian(message_drive.AsSpan().Slice(0, 4), 600 * _amt.Percentage);
-                    BinaryPrimitives.WriteSingleLittleEndian(message_drive.AsSpan().Slice(4, 4), 1f);
+                    BinaryPrimitives.WriteSingleLittleEndian(message_drive.AsSpan().Slice(0, 4),1000);
+                    BinaryPrimitives.WriteSingleLittleEndian(message_drive.AsSpan().Slice(4, 4), _amt.Percentage);
                     CanFrame frame_drive = new CanFrame();
                     frame_drive.CanId = 0x501;
                     frame_drive.Data = message_drive;
