@@ -25,7 +25,7 @@ namespace Lux.DataRadio
 				Mode = SpiMode.Mode0,
 				DataBitLength = 8,
 			};
-
+            /*
 			ushort ZeroValue = 1;
 			using (SpiDevice device = SpiDevice.Create(settings))
 			{
@@ -35,7 +35,8 @@ namespace Lux.DataRadio
 
 				ZeroValue = (ushort)(BinaryPrimitives.ReadUInt16BigEndian(readBuffer) & 0x3FFF);
 			}
-			using (var rawCanSocket = new RawCanSocket())
+			*/
+            using (var rawCanSocket = new RawCanSocket())
 			{
 				CanNetworkInterface can0 = CanNetworkInterface.GetAllInterfaces(true).First(iface => iface.Name.Equals("can0"));
 				rawCanSocket.Bind(can0);
