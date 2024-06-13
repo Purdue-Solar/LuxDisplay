@@ -8,58 +8,112 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Lux.DriverInterface.Shared;
+using Lux.DriverInterface.Shared.CanPackets.Peripherals;
+using Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualBasic;
 using SocketCANSharp;
 using SocketCANSharp.Network;
 
+using WavesculptorStatus = Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast.Status;
+using PeripheralsStatus = Lux.DriverInterface.Shared.CanPackets.Peripherals.Status;
+
 namespace Lux.DataRadio
 {
 
-	public class CANReceiveService(WaveSculptor wsc, Header header, EMU emu, Telemetry telemetry, Peripheral peripheral) : BackgroundService
+	public class CANReceiveService(WaveSculptor wsc, Header header, EMU emu, Telemetry telemetry, CanDecoder decoder) : BackgroundService
 	{
-		private readonly WaveSculptor _wsc = wsc;
-		private readonly Header _header = header;
-		private readonly EMU _emu = emu;
-		private readonly Telemetry _telemetry = telemetry;
-		private readonly Peripheral _peripheral = peripheral;
+		protected WaveSculptor WaveSculptor { get; } = wsc;
+		protected Header Header { get; } = header;
+		protected Telemetry Telemetry { get; } = telemetry;
+
+		protected CanDecoder Decoder { get; } = decoder;
+
+		private void Init()
+		{
+			Decoder.AddPacketDecoder((WavesculptorStatus status) =>
+			{
+				WaveSculptor.LimitFlags = status.Limits;
+				WaveSculptor.ErrorFlags = status.Errors;
+			});
+
+			Decoder.AddPacketDecoder((BusMeasurement bus) =>
+			{
+				WaveSculptor.BusCurrent = bus.BusCurrent;
+				WaveSculptor.BusVoltage = bus.BusVoltage;
+			});
+
+			Decoder.AddPacketDecoder((VelocityMeasurement velocity) =>
+			{
+				WaveSculptor.VehicleVelocity = velocity.VehicleVelocity;
+				WaveSculptor.MotorVelocity = velocity.MotorVelocity;
+			});
+
+			Decoder.AddPacketDecoder((PhaseCurrent current) =>
+			{
+				WaveSculptor.PhaseBCurrent = current.PhaseBCurrent;
+				WaveSculptor.PhaseCCurrent = current.PhaseCCurrent;
+			});
+
+			Decoder.AddPacketDecoder((VoltageVector voltage) =>
+			{
+				WaveSculptor.Vd = voltage.Vd;
+				WaveSculptor.Vq = voltage.Vq;
+			});
+
+			Decoder.AddPacketDecoder((CurrentVector current) =>
+			{
+				WaveSculptor.CurrentD = current.CurrentD;
+				WaveSculptor.CurrentQ = current.CurrentQ;
+			});
+
+			Decoder.AddPacketDecoder((BackEmf bemf) =>
+			{
+				WaveSculptor.BemfD = bemf.BemfD;
+				WaveSculptor.BemfQ = bemf.BemfQ;
+			});
+
+			Decoder.AddPacketDecoder((Voltage15V voltage) => WaveSculptor.Voltage15 = voltage.Voltage15);
+
+			Decoder.AddPacketDecoder((HeatSinkMotorTemp temp) =>
+			{
+				WaveSculptor.HeatsinkTemp = temp.HeatSinkTemp;
+				WaveSculptor.MotorTemp = temp.MotorTemp;
+			});
+
+			Decoder.AddPacketDecoder((DspBoardTemp temp) => WaveSculptor.DspBoardTemp = temp.DspTemp);
+
+			Decoder.AddPacketDecoder((OdometerBusAmpHrs odo) =>
+			{
+				WaveSculptor.DcBusAmpHrs = odo.DcBusAmpHrs;
+				WaveSculptor.Odometer = odo.Odometer;
+			});
+
+			Decoder.AddPacketDecoder((SlipSpeed slip) => WaveSculptor.SlipSpeed = slip.SlipSpeedHz);
+		}
+
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 		{
-			int bytesRead = 1;
-			CanFrame frame = new CanFrame();
-			using (var rawCanSocket = new RawCanSocket())
+			Init();
+
+			int bytesRead = 0;
+			using var rawCanSocket = new RawCanSocket();
+			CanNetworkInterface can0 = CanNetworkInterface.GetAllInterfaces(true).First(iface => iface.Name.Equals("can0"));
+
+			rawCanSocket.Bind(can0);
+			while (!stoppingToken.IsCancellationRequested)
 			{
-				CanNetworkInterface can0 = CanNetworkInterface.GetAllInterfaces(true).First(iface => iface.Name.Equals("can0"));
-				rawCanSocket.Bind(can0);
-				while (!stoppingToken.IsCancellationRequested)
+				//Reading from CAN
+				CanFrame frame = default;
+				bytesRead = await Task.Run(() => rawCanSocket.Read(out frame));
+				if (bytesRead != 0)
 				{
-					//Reading from CAN
-					bytesRead = await Task.Run(() => rawCanSocket.Read(out frame));
-					if (bytesRead != 0)
-					{
-						uint category = (frame.CanId & 0x07C00000) >> 22;
-						uint src_device = (frame.CanId & 0x0000FF00) >> 8;
-						uint message_id = (frame.CanId & 0x003F0000) >> 16;
-						//Telemtry board
-						if ((int)category == 7)
-						{
-							_telemetry.Telemetry_Can_General(frame.Data);
-						}
-
-						//Peripheral Controllers
-						if ((int)category == 5)
-						{
-							_peripheral.PeripheralCan(src_device, message_id, frame.Data);
-						}
-						if (frame.CanId >> 31 == 1)//check for extended can frame
-						{
-
-						}
-						else
-						{
-						}
-					}
+					uint id = frame.CanId & 0x1FFFFFFF;
+					bool isExtended = frame.CanId >> 31 == 1;
+					Decoder.HandleCanPacket(id, isExtended, frame.Data);
 				}
+				else
+					await Task.Delay(1);
 			}
 		}
 	}

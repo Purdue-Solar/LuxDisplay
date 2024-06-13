@@ -30,18 +30,18 @@ namespace Lux.DataRadio
 						_header.Headlights = !_header.Headlights;
 					}
 					//Changing Motor Values
-					_wsc.Critical.Vehicle_Velocity = _wsc.Critical.Vehicle_Velocity + 1;
-					_wsc.Critical.Vehicle_Velocity %= 100;
-					_wsc.Critical.Motor_Velocity = _wsc.Critical.Motor_Velocity + 1;
-					_wsc.Critical.Motor_Velocity %= 1000;
-					_wsc.Critical.Bus_Current = _wsc.Critical.Bus_Current + 1;
-					_wsc.Critical.Bus_Current %= 50;
-					_wsc.Critical.Bus_Voltage = _wsc.Critical.Bus_Voltage + 1;
-					_wsc.Critical.Bus_Voltage %= 120;
-					_wsc.Critical.Heat_Sink_Temp = _wsc.Critical.Heat_Sink_Temp + 1;
-					_wsc.Critical.Heat_Sink_Temp %= 100;
-					_wsc.Critical.Motor_Temp = _wsc.Critical.Motor_Temp + 1;
-					_wsc.Critical.Motor_Temp %= 100;
+					_wsc.Critical.VehicleVelocity = _wsc.Critical.VehicleVelocity + 1;
+					_wsc.Critical.VehicleVelocity %= 100;
+					_wsc.Critical.MotorVelocity = _wsc.Critical.MotorVelocity + 1;
+					_wsc.Critical.MotorVelocity %= 1000;
+					_wsc.Critical.BusCurrent = _wsc.Critical.BusCurrent + 1;
+					_wsc.Critical.BusCurrent %= 50;
+					_wsc.Critical.BusVoltage = _wsc.Critical.BusVoltage + 1;
+					_wsc.Critical.BusVoltage %= 120;
+					_wsc.Critical.HeatSinkTemp = _wsc.Critical.HeatSinkTemp + 1;
+					_wsc.Critical.HeatSinkTemp %= 100;
+					_wsc.Critical.MotorTemp = _wsc.Critical.MotorTemp + 1;
+					_wsc.Critical.MotorTemp %= 100;
 
 
 					//Changing Battery Values

@@ -21,7 +21,7 @@ namespace Lux.DriverInterface.Shared
 		public short PressureSensor1 { get; set; }
 		public short PressureSensor2 { get; set; }
 		//public short DHT_Temp { get; set; }
-		public int DHT_Temp { get; set; }
+		public int CabinTemperature { get; set; }
 		//public short DHT_Humidity { get; set; }
 		public int DHT_Humidity { get; set; }
 
@@ -47,7 +47,7 @@ namespace Lux.DriverInterface.Shared
             */
 
 			DHT_Humidity = BitConverter.ToInt32(bytes, 0);
-			DHT_Temp = BitConverter.ToInt32(bytes, 4);
+			CabinTemperature = BitConverter.ToInt32(bytes, 4);
 		}
 	}
 }
