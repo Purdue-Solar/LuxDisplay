@@ -40,10 +40,11 @@ namespace Lux.DataRadio
 						uint category = (frame.CanId & 0x07C00000) >> 22;
 						uint src_device = (frame.CanId & 0x0000FF00) >> 8;
 						uint message_id = (frame.CanId & 0x003F0000) >> 16;
+
 						//Telemtry board
 						if ((int)category == 7)
 						{
-							_telemetry.Telemetry_Can_General(frame.Data);
+							_telemetry.TelemetryCanGeneral(frame.Data);
 						}
 
 						//Peripheral Controllers

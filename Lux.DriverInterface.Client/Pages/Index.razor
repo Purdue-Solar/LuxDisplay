@@ -10,14 +10,13 @@
 @inject NavigationManager NavigationManager
 @inject Encoder amt
 <PageTitle>Home</PageTitle>
-@(amt.Value & 0x3FFF)
-@(amt.Percentage)
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Electric Car Dashboard</title>
     <style>
+    /*Generated Code*/
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -42,11 +41,12 @@
             padding: 80px;
             font-size:30px;
             margin-bottom: 20px;
+            margin-right: 20px;
+            margin-left: 20px;
         }
         .speedometer .value {
             font-size: 4em;
             font-weight: bold;
-            margin-bottom: 10px;
         }
         .speedometer .label {
             font-size: 1.5em;
@@ -66,23 +66,80 @@
             max-width: 80%;
             max-height: 80%;
         }
+
+        .additional-speedometers {
+            display: flex;
+            justify-content: space-between; /* Adjust alignment as needed */
+            margin-top: 20px; /* Adjust spacing as needed */
+        }
+
+        .additional-speedometer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .additional-speedometer .value {
+            font-size: 3em; /* Adjust size as needed */
+            position: absolute;
+            top: 40%;
+
+        }
+
+        .additional-speedometer .label {
+            font-size: 2em; /* Adjust size as needed */
+            color: #999; /* Adjust color as needed */
+            position: absolute;
+            top: 47.5%;
+        }
+        .blinker-main-page{
+            position: absolute;
+            top: 5%;
+            font-size: 70px;
+        }
+        .row-data
+        {
+            display:flex;
+            flex-direction: row;
+            justify-content: center;
+        }
+        .symbol
+        {
+            font-size: 50px;
+            padding: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="container" style="border-color:Background">
-        <div class="speedometer">
-            <div class="value">60</div>
-            <div class="label">mph</div>
+        <div class="additional-speedometers">
+            <div class="additional-speedometer">
+                <div class="blinker-main-page"><Icon Name="IconName.ArrowLeftCircleFill" Color="IconColor.Muted" /></div>
+                <div class="value">20</div>
+                <div class="label">Power in (W)</div>
+            </div>
+            <div class="speedometer">
+                <div class="value">10</div>
+                <div class="label">W</div>
+            </div>
+            <div class="speedometer">
+                <div class="value">15</div>
+                <div class="label">mph</div>
+            </div>
+            <div class="additional-speedometer">
+                <div class="blinker-main-page"><Icon Name="IconName.ArrowRightCircleFill" Color="IconColor.Muted" /></div>
+                <div class="value">20</div>
+                <div class="label">cabin temp &deg</div>
+            </div>
         </div>
-        <div class="speedometer">
-            <div class="value">30</div>
-            <div class="label">kW</div>
+        <div class="row-data">
+            <h1 class="symbol"><Icon Name="IconName.Battery" Color="IconColor.Muted" /></h1>
+            <h1 class="symbol"><Icon Name="IconName.BrightnessHigh" Color="IconColor.Muted" /></h1>
+            <h1 class="symbol"><Icon Name="IconName.ExclamationTriangle" Color="IconColor.Muted" /></h1>
+            <h1 class="symbol"><Icon Name="IconName.Gear" Color="IconColor.Muted" /></h1>
+            <h1 class="symbol"><Icon Name="IconName.ThermometerHigh" Color="IconColor.Muted" /></h1>
         </div>
     </div>
-
-    <input @bind ="amt.Percentage" type="range" min="0" max="1" step="0.01">
-    @(amt.Percentage)
-
 </body>
 
 
@@ -120,6 +177,8 @@
             header = await Http.GetFromJsonAsync<Header>("/api/Header") ?? throw new Exception("Null Value Received for header");
             emu.Critical = await Http.GetFromJsonAsync<EMU.EMUCritical>("/api/EMUCritical") ?? throw new Exception("Null Value Received for emu.Critical");
             //amt = await Http.GetFromJsonAsync<Encoder>("/api/Encoder") ?? throw new Exception("Null Value Received for amt");
+
+            //Sends the data to the backend for front end control. This will not be used for deployment.
             await Http.PostAsJsonAsync("/api/Encoder", amt.Percentage);
         }
         StateHasChanged(); // Update the UI

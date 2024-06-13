@@ -14,6 +14,8 @@ namespace Lux.DriverInterface.Server.Controllers
 		{
 			return _amt;
 		}
+
+        //Used for testing the motor using a slider on the UI
         [HttpPost]
         public void Post([FromBody] float value)
         {
