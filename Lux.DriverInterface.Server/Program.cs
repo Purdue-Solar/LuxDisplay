@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Lux.DriverInterface.Shared;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://*:61248");
+builder.WebHost.UseUrls("http://*:61248", "https://*:61249");
 builder.WebHost.UseSetting("http_port", "61248");
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -18,7 +18,8 @@ builder.Services.AddHostedService<TestingDataIncrementService>();
 //builder.Services.AddHostedService<CANSendService>();
 
 
-builder.Services.AddHostedService<EncoderService>();
+//builder.Services.AddHostedService<EncoderService>();
+//builder.Services.AddHostedService<CANReceiveService>();
 
 builder.Services.AddBlazorBootstrap(); // Add this line
 builder.Services.AddRazorPages();
@@ -37,7 +38,7 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
