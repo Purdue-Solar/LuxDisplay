@@ -15,25 +15,13 @@ public class CanDecoder
 	public delegate void DecodeCallback<T>(T value);
 	public delegate bool TryReadFunc(uint id, bool isExtended, ReadOnlySpan<byte> data, out IReadableCanPacket packet);
 
-	protected Dictionary<Type, (TryReadFunc TryRead, DecodeCallback Callback)> Decoders { get; } = new Dictionary<Type, (TryReadFunc, DecodeCallback)>();
+	protected Dictionary<Type, (TryReadFunc TryRead, DecodeCallback Callback)> Decoders { get; } = [];
 
 	public void AddPacketDecoder<T>(DecodeCallback<T> onDecodeFunction) where T : struct, IReadableCanPacket<T>
 	{
-		DecodeCallback callback = (IReadableCanPacket value) => onDecodeFunction((T)value);
-		Decoders.Add(typeof(T), (T.TryRead, callback));
-	}
+		void Callback(IReadableCanPacket value) => onDecodeFunction((T)value);
 
-	static void HandleStatus(CanPackets.Peripherals.Status status)
-	{
-		Console.WriteLine(status);
-	}
-
-	public static void Test()
-	{ 		
-		CanDecoder decoder = new CanDecoder();
-		decoder.AddPacketDecoder<CanPackets.Peripherals.Status>(HandleStatus);
-
-		decoder.AddPacketDecoder((BackEmf backEmf) => Console.WriteLine(backEmf));
+		Decoders.Add(typeof(T), (T.TryRead, Callback));
 	}
 
 	/// <summary>
@@ -65,13 +53,5 @@ public class CanDecoder
 		}
 
 		return false;
-	}
-}
-
-public static class CanDecoderExtensions
-{
-	public static IServiceCollection AddCanDecoder(this IServiceCollection services)
-	{
-		return services;
 	}
 }

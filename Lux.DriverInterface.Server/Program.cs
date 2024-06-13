@@ -7,11 +7,10 @@ builder.WebHost.UseUrls("http://*:61248", "https://*:61249");
 builder.WebHost.UseSetting("http_port", "61248");
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddSingleton<Header>();
-builder.Services.AddSingleton<EMU>();
 builder.Services.AddSingleton<WaveSculptor>();
 builder.Services.AddSingleton<Telemetry>();
 builder.Services.AddSingleton<Encoder>(); // Only necessary for testing
+builder.Services.AddSingleton<MpptCollection>();
 builder.Services.AddSingleton<CanDecoder>();
 
 builder.Services.AddHostedService<TestingDataIncrementService>();
@@ -19,7 +18,7 @@ builder.Services.AddHostedService<TestingDataIncrementService>();
 
 
 //builder.Services.AddHostedService<EncoderService>();
-//builder.Services.AddHostedService<CANReceiveService>();
+builder.Services.AddHostedService<CanReceiveService>();
 
 builder.Services.AddBlazorBootstrap(); // Add this line
 builder.Services.AddRazorPages();

@@ -17,18 +17,101 @@ using SocketCANSharp.Network;
 
 using WavesculptorStatus = Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast.Status;
 using PeripheralsStatus = Lux.DriverInterface.Shared.CanPackets.Peripherals.Status;
+using MpptStatus = Lux.DriverInterface.Shared.CanPackets.Elmar.Broadcast.Status;
+using Lux.DriverInterface.Shared.CanPackets.Elmar.Broadcast;
 
 namespace Lux.DataRadio
 {
-
-	public class CANReceiveService(WaveSculptor wsc, Telemetry telemetry, CanDecoder decoder) : BackgroundService
+	public class CanReceiveService(WaveSculptor wsc, MpptCollection mppts, Telemetry telemetry, CanDecoder decoder) : BackgroundService
 	{
 		protected WaveSculptor WaveSculptor { get; } = wsc;
+		protected MpptCollection Mppts { get; } = mppts;
 		protected Telemetry Telemetry { get; } = telemetry;
 
 		protected CanDecoder Decoder { get; } = decoder;
 
 		private void Init()
+		{
+			AddWavesculptorDecoders();
+			AddMpptDecoders();
+		}
+
+		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+		{
+			Init();
+
+			using var rawCanSocket = new RawCanSocket();
+			CanNetworkInterface can0 = CanNetworkInterface.GetAllInterfaces(true).First(iface => iface.Name.Equals("can0"));
+
+			rawCanSocket.Bind(can0);
+			while (!stoppingToken.IsCancellationRequested)
+			{
+				//Reading from CAN
+				CanFrame frame = default;
+				int bytesRead = await Task.Run(() => rawCanSocket.Read(out frame));
+				if (bytesRead != 0)
+				{
+					bool isExtended = frame.CanId >> 31 == 1;
+					uint id = isExtended ? frame.CanId & 0x1FFFFFFF : frame.CanId & 0x7FF;
+
+					Decoder.HandleCanPacket(id, isExtended, frame.Data);
+				}
+				else
+					await Task.Delay(1, stoppingToken);
+			}
+		}
+
+		private void AddMpptDecoders()
+		{
+			Decoder.AddPacketDecoder((InputMeasurements input) =>
+			{
+				Mppts[input.DeviceId].InputVoltage = input.InputVoltage;
+				Mppts[input.DeviceId].InputCurrent = input.InputCurrent;
+			});
+
+			Decoder.AddPacketDecoder((OutputMeasurements output) =>
+			{
+				Mppts[output.DeviceId].OutputVoltage = output.OutputVoltage;
+				Mppts[output.DeviceId].OutputCurrent = output.OutputCurrent;
+			});
+
+			Decoder.AddPacketDecoder((Temperature temp) =>
+			{
+				Mppts[temp.DeviceId].MosfetTemperature = temp.MosfetTemperature;
+				Mppts[temp.DeviceId].ControllerTemperature = temp.ControllerTemperature;
+			});
+
+			Decoder.AddPacketDecoder((AuxiliaryPowerSupply aux) =>
+			{
+				Mppts[aux.DeviceId].Voltage12V = aux.Voltage12V;
+				Mppts[aux.DeviceId].Voltage3V = aux.Voltage3V;
+			});
+
+			Decoder.AddPacketDecoder((Limits limits) =>
+			{
+				Mppts[limits.DeviceId].MaxOutputVoltage = limits.MaxOutputVoltage;
+				Mppts[limits.DeviceId].MaxInputCurrent = limits.MaxInputCurrent;
+			});
+
+			Decoder.AddPacketDecoder((MpptStatus status) =>
+			{
+				Mppts[status.DeviceId].RxErrorCount = status.RxErrorCount;
+				Mppts[status.DeviceId].TxErrorCount = status.TxErrorCount;
+				Mppts[status.DeviceId].TxOverflowCount = status.TxOverflowCount;
+				Mppts[status.DeviceId].ErrorFlags = status.Errors;
+				Mppts[status.DeviceId].LimitFlags = status.Limits;
+				Mppts[status.DeviceId].Mode = status.Mode;
+				Mppts[status.DeviceId].TestCounter = status.TestCounter;
+			});
+
+			Decoder.AddPacketDecoder((PowerConnector connector) =>
+			{
+				Mppts[connector.DeviceId].PowerConnectorVoltage = connector.OutputVoltage;
+				Mppts[connector.DeviceId].PowerConnectorTemp = connector.ConnectorTemperature;
+			});
+		}
+
+		private void AddWavesculptorDecoders()
 		{
 			Decoder.AddPacketDecoder((WavesculptorStatus status) =>
 			{
@@ -95,31 +178,6 @@ namespace Lux.DataRadio
 			});
 
 			Decoder.AddPacketDecoder((SlipSpeed slip) => WaveSculptor.SlipSpeed = slip.SlipSpeedHz);
-		}
-
-		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-		{
-			Init();
-
-			using var rawCanSocket = new RawCanSocket();
-			CanNetworkInterface can0 = CanNetworkInterface.GetAllInterfaces(true).First(iface => iface.Name.Equals("can0"));
-
-			rawCanSocket.Bind(can0);
-			while (!stoppingToken.IsCancellationRequested)
-			{
-				//Reading from CAN
-				CanFrame frame = default;
-				int bytesRead = await Task.Run(() => rawCanSocket.Read(out frame));
-				if (bytesRead != 0)
-				{
-					bool isExtended = frame.CanId >> 31 == 1;
-					uint id = isExtended ? frame.CanId & 0x1FFFFFFF : frame.CanId & 0x7FF;
-
-					Decoder.HandleCanPacket(id, isExtended, frame.Data);
-				}
-				else
-					await Task.Delay(1, stoppingToken);
-			}
 		}
 	}
 }
