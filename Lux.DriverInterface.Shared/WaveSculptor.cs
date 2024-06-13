@@ -27,6 +27,8 @@ namespace Lux.DriverInterface.Shared
 		public float BemfD { get; set; }
 		public float BemfQ { get; set; }
 		public float Voltage15 { get; set; }
+		public float Voltage1V9 { get; set; }
+		public float Voltage3V3 { get; set; }
 		public float HeatsinkTemp { get; set; }
 		public float MotorTemp { get; set; }
 		public float DspBoardTemp { get; set; }

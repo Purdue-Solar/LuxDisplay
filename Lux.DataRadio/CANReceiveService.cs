@@ -21,10 +21,9 @@ using PeripheralsStatus = Lux.DriverInterface.Shared.CanPackets.Peripherals.Stat
 namespace Lux.DataRadio
 {
 
-	public class CANReceiveService(WaveSculptor wsc, Header header, EMU emu, Telemetry telemetry, CanDecoder decoder) : BackgroundService
+	public class CANReceiveService(WaveSculptor wsc, Telemetry telemetry, CanDecoder decoder) : BackgroundService
 	{
 		protected WaveSculptor WaveSculptor { get; } = wsc;
-		protected Header Header { get; } = header;
 		protected Telemetry Telemetry { get; } = telemetry;
 
 		protected CanDecoder Decoder { get; } = decoder;
@@ -75,6 +74,12 @@ namespace Lux.DataRadio
 
 			Decoder.AddPacketDecoder((Voltage15V voltage) => WaveSculptor.Voltage15 = voltage.Voltage15);
 
+			Decoder.AddPacketDecoder((Voltage3V3_1V9 voltage) =>
+			{
+				WaveSculptor.Voltage1V9 = voltage.Voltage1V9;
+				WaveSculptor.Voltage3V3 = voltage.Voltage3V3;
+			});
+
 			Decoder.AddPacketDecoder((HeatSinkMotorTemp temp) =>
 			{
 				WaveSculptor.HeatsinkTemp = temp.HeatSinkTemp;
@@ -96,7 +101,6 @@ namespace Lux.DataRadio
 		{
 			Init();
 
-			int bytesRead = 0;
 			using var rawCanSocket = new RawCanSocket();
 			CanNetworkInterface can0 = CanNetworkInterface.GetAllInterfaces(true).First(iface => iface.Name.Equals("can0"));
 
@@ -105,15 +109,16 @@ namespace Lux.DataRadio
 			{
 				//Reading from CAN
 				CanFrame frame = default;
-				bytesRead = await Task.Run(() => rawCanSocket.Read(out frame));
+				int bytesRead = await Task.Run(() => rawCanSocket.Read(out frame));
 				if (bytesRead != 0)
 				{
-					uint id = frame.CanId & 0x1FFFFFFF;
 					bool isExtended = frame.CanId >> 31 == 1;
+					uint id = isExtended ? frame.CanId & 0x1FFFFFFF : frame.CanId & 0x7FF;
+
 					Decoder.HandleCanPacket(id, isExtended, frame.Data);
 				}
 				else
-					await Task.Delay(1);
+					await Task.Delay(1, stoppingToken);
 			}
 		}
 	}
