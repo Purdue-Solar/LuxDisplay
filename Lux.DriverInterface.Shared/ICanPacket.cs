@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,7 +29,7 @@ public interface IReadableCanPacket : ICanPacket
 	/// <param name="data">the buffer to read from</param>
 	/// <param name="packet">the packet that was read</param>
 	/// <returns>whether the packet was successfully read</returns>
-	static abstract bool TryRead(uint id, bool extended, ReadOnlySpan<byte> data, out IReadableCanPacket packet);
+	static abstract bool TryRead(uint id, bool extended, ReadOnlySpan<byte> data, [NotNullWhen(true)] out IReadableCanPacket? packet);
 }
 public interface IReadableCanPacket<T> : IReadableCanPacket, ICanPacket<T> where T : struct, IReadableCanPacket<T>
 {

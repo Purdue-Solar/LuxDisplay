@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -26,27 +29,29 @@ public readonly struct Status(uint id, Outputs outputs) : IReadableCanPacket<Sta
 		return (id & mask) == idEq;
 	}
 
-	static bool IReadableCanPacket.TryRead(uint id, bool extended, ReadOnlySpan<byte> data, out IReadableCanPacket packet)
+	static bool IReadableCanPacket.TryRead(uint id, bool extended, ReadOnlySpan<byte> data, [NotNullWhen(true)] out IReadableCanPacket? readableCanPacket)
 	{
-		bool flag = TryRead(id, extended, data, out var genericPacket);
-		packet = genericPacket;
-		return flag;
+		if (!TryRead(id, extended, data, out var packet))
+		{
+			readableCanPacket = null;
+			return false;
+		}
+
+		readableCanPacket = packet;
+		return true;
 	}
 
 	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out Status packet)
 	{
-		packet = default;
 
-		if (!isExtended)
+		if (data.Length < Size || !IsValidId(id, isExtended))
+		{
+			packet = default;
 			return false;
+		}
 
-		if (!IsValidId(id, isExtended))
-			return false;
+		ushort outputs = BinaryPrimitives.ReadUInt16LittleEndian(data);
 
-		if (data.Length < Size)
-			return false;
-
-		ushort outputs = BitConverter.ToUInt16(data);
 		packet = new Status(id, new Outputs(outputs));
 		return true;
 	}

@@ -34,5 +34,4 @@ public class Mppt(byte deviceId)
 	public byte TestCounter { get; set; }
 	public float PowerConnectorVoltage { get; set; }
 	public float PowerConnectorTemp { get; set; }
-
 }

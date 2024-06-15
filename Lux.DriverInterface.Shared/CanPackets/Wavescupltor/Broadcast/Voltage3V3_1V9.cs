@@ -2,6 +2,7 @@
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -33,19 +34,19 @@ public struct Voltage3V3_1V9(float voltage1v9, float voltage3v3) : IReadableCanP
 
 	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out Voltage3V3_1V9 packet)
     {
-        packet = default;
+		if (!IsValidId(id, isExtended) || data.Length < Size)
+		{
+			packet = default;
+			return false;
+		}
 
-        if (isExtended || id != CanId)
-            return false;
+		// Hack to avoid extra range checks
+		ReadOnlySpan<byte> a = MemoryMarshal.CreateReadOnlySpan(in data[0], Size);
 
-        if (data.Length < Size)
-            return false;
-
-        float voltage1V9 = BinaryPrimitives.ReadSingleLittleEndian(data);
-        float voltage3V3 = BinaryPrimitives.ReadSingleLittleEndian(data.Slice(sizeof(float)));
+		float voltage1V9 = BinaryPrimitives.ReadSingleLittleEndian(a);
+        float voltage3V3 = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
 
         packet = new Voltage3V3_1V9(voltage1V9, voltage3V3);
         return true;
     }
-
 }

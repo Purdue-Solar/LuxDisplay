@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -46,12 +48,17 @@ public readonly struct Status(uint id, byte rxErrorCount, byte txErrorCount, byt
 	public byte TestCounter { get; } = testCounter;
 
 	public static bool IsValidId(uint id, bool extended) => !extended && (id & ElmarBase.BaseMessageMask) == ElmarBase.BaseId + (uint)BroadcastId.Status;
-
-	static bool IReadableCanPacket.TryRead(uint id, bool extended, ReadOnlySpan<byte> data, out IReadableCanPacket readablePacket)
+	
+	static bool IReadableCanPacket.TryRead(uint id, bool extended, ReadOnlySpan<byte> data, [NotNullWhen(true)] out IReadableCanPacket? readableCanPacket)
 	{
-		bool flag = TryRead(id, extended, data, out var packet);
-		readablePacket = packet;
-		return flag;
+		if (!TryRead(id, extended, data, out var packet))
+		{
+			readableCanPacket = null;
+			return false;
+		}
+
+		readableCanPacket = packet;
+		return true;
 	}
 
 	public static bool TryRead(uint id, bool extended, ReadOnlySpan<byte> data, out Status packet)

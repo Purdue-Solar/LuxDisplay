@@ -11,14 +11,5 @@ namespace Lux.DriverInterface.Shared
 	{
 		public static string ApiUrl_motor { get; set; } = "http://localhost:8080/api/motor";
 		public static string ApiUrl_header { get; set; } = "http://localhost:8080/api/header";
-
-		public struct Data
-		{
-			public Data(Header _Header)
-			{
-				Header = _Header;
-			}
-			public Header Header { get; init; }
-		}
 	}
 }

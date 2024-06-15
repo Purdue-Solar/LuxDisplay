@@ -2,7 +2,9 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,11 +27,16 @@ public readonly struct AuxiliaryPowerSupply(uint id, float voltage12V, float vol
 
 	public static bool IsValidId(uint id, bool isExtended) => !isExtended && (id & ElmarBase.BaseMessageMask) == ElmarBase.BaseId + (uint)BroadcastId.AuxiliaryPowerSupply;
 
-	static bool IReadableCanPacket.TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out IReadableCanPacket readableCanPacket)
+	static bool IReadableCanPacket.TryRead(uint id, bool extended, ReadOnlySpan<byte> data, [NotNullWhen(true)] out IReadableCanPacket? readableCanPacket)
 	{
-		bool flag = TryRead(id, isExtended, data, out var packet);
+		if (!TryRead(id, extended, data, out var packet))
+		{
+			readableCanPacket = null;
+			return false;
+		}
+
 		readableCanPacket = packet;
-		return flag;
+		return true;
 	}
 
 	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out AuxiliaryPowerSupply packet)
@@ -40,8 +47,11 @@ public readonly struct AuxiliaryPowerSupply(uint id, float voltage12V, float vol
 			return false;
 		}
 
-		float voltage12V = BinaryPrimitives.ReadSingleLittleEndian(data);
-		float voltage3V = BinaryPrimitives.ReadSingleLittleEndian(data.Slice(4));
+		// Hack to avoid extra range checks
+		ReadOnlySpan<byte> a = MemoryMarshal.CreateReadOnlySpan(in data[0], Size);
+
+		float voltage12V = BinaryPrimitives.ReadSingleLittleEndian(a);
+		float voltage3V = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(4));
 
 		packet = new AuxiliaryPowerSupply(id, voltage12V, voltage3V);
 		return true;

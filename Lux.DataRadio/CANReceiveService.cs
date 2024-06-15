@@ -5,11 +5,14 @@ using System.IO.Ports;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Lux.DriverInterface.Shared;
 using Lux.DriverInterface.Shared.CanPackets.Peripherals;
 using Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast;
+using Lux.DriverInterface.Shared.CanPackets.Elmar.Broadcast;
+using Lux.DriverInterface.Shared.CanPackets.Steering;
 using Microsoft.Extensions.Hosting;
 using Microsoft.VisualBasic;
 using SocketCANSharp;
@@ -18,14 +21,16 @@ using SocketCANSharp.Network;
 using WavesculptorStatus = Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast.Status;
 using PeripheralsStatus = Lux.DriverInterface.Shared.CanPackets.Peripherals.Status;
 using MpptStatus = Lux.DriverInterface.Shared.CanPackets.Elmar.Broadcast.Status;
-using Lux.DriverInterface.Shared.CanPackets.Elmar.Broadcast;
+using SteeringStatus = Lux.DriverInterface.Shared.CanPackets.Steering.Status;
+using System.Runtime.CompilerServices;
 
 namespace Lux.DataRadio
 {
-	public class CanReceiveService(WaveSculptor wsc, MpptCollection mppts, Telemetry telemetry, CanDecoder decoder) : BackgroundService
+	public class CanReceiveService(WaveSculptor wsc, MpptCollection mppts, SteeringWheel steering, Telemetry telemetry, CanDecoder decoder) : BackgroundService
 	{
 		protected WaveSculptor WaveSculptor { get; } = wsc;
 		protected MpptCollection Mppts { get; } = mppts;
+		protected SteeringWheel SteeringWheel { get; } = steering;
 		protected Telemetry Telemetry { get; } = telemetry;
 
 		protected CanDecoder Decoder { get; } = decoder;
@@ -34,6 +39,7 @@ namespace Lux.DataRadio
 		{
 			AddWavesculptorDecoders();
 			AddMpptDecoders();
+			AddSteeringWheelDecoders();
 		}
 
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -59,6 +65,26 @@ namespace Lux.DataRadio
 				else
 					await Task.Delay(1, stoppingToken);
 			}
+		}
+
+		private void AddSteeringWheelDecoders()
+		{
+			Decoder.AddPacketDecoder((SteeringStatus status) =>
+			{
+				SteeringStatus.ButtonFlags buttons = status.Buttons;
+
+				SteeringWheel.PushToTalkActive = (buttons & SteeringStatus.ButtonFlags.PushToTalk) != 0;
+				SteeringWheel.HeadlightsActive = (buttons & SteeringStatus.ButtonFlags.Headlight) != 0;
+				SteeringWheel.RightTurnActive = (buttons & SteeringStatus.ButtonFlags.RightTurn) != 0;
+				SteeringWheel.HazardsActive = (buttons & SteeringStatus.ButtonFlags.Hazards) != 0;
+				SteeringWheel.LeftTurnActive = (buttons & SteeringStatus.ButtonFlags.LeftTurn) != 0;
+				SteeringWheel.CruiseActive = (buttons & SteeringStatus.ButtonFlags.Cruise) != 0;
+				SteeringWheel.CruiseUpActive = (buttons & SteeringStatus.ButtonFlags.CruiseUp) != 0;
+				SteeringWheel.CruiseDownActive = (buttons & SteeringStatus.ButtonFlags.CruiseDown) != 0;
+				SteeringWheel.HornActive = (buttons & SteeringStatus.ButtonFlags.Horn) != 0;
+
+				SteeringWheel.Page = status.Page;
+			});
 		}
 
 		private void AddMpptDecoders()

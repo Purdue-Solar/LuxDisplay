@@ -31,7 +31,6 @@ public struct Outputs(ushort value)
 
 			return (OutputState)((Value >> shift) & 0x03);
 		}
-
 		set
 		{
 			if (index < 0 || index >= OutputCount)

@@ -1,7 +1,9 @@
 ﻿using Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -9,11 +11,14 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Lux.DriverInterface.Shared;
-public class CanDecoder
+
+public class CanDecoder(ILogger<CanDecoder> logger)
 {
+	protected ILogger Logger { get; } = logger;
+
 	public delegate void DecodeCallback(IReadableCanPacket value);
-	public delegate void DecodeCallback<T>(T value);
-	public delegate bool TryReadFunc(uint id, bool isExtended, ReadOnlySpan<byte> data, out IReadableCanPacket packet);
+	public delegate void DecodeCallback<T>(T value) where T : struct, IReadableCanPacket<T>;
+	public delegate bool TryReadFunc(uint id, bool isExtended, ReadOnlySpan<byte> data, [NotNullWhen(true)] out IReadableCanPacket? packet);
 
 	protected Dictionary<Type, (TryReadFunc TryRead, DecodeCallback Callback)> Decoders { get; } = [];
 
@@ -22,6 +27,8 @@ public class CanDecoder
 		void Callback(IReadableCanPacket value) => onDecodeFunction((T)value);
 
 		Decoders.Add(typeof(T), (T.TryRead, Callback));
+
+		Logger.LogDebug("Added packet decoder for {name}", typeof(T).Name);
 	}
 
 	/// <summary>
@@ -45,7 +52,7 @@ public class CanDecoder
 	{
 		foreach (var decoder in Decoders)
 		{
-			if (decoder.Value.TryRead(id, isExtended, data, out IReadableCanPacket packet))
+			if (decoder.Value.TryRead(id, isExtended, data, out IReadableCanPacket? packet))
 			{
 				decoder.Value.Callback(packet);
 				return true;

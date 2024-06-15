@@ -86,7 +86,7 @@ public readonly struct PsrCanId(byte dst, byte src, byte messageId, CanIds.Devic
 			   Priority == other.Priority;
 	}
 
-	public override bool Equals(object obj) => obj is PsrCanId other && Equals(other);
+	public override bool Equals(object? obj) => obj is PsrCanId other && Equals(other);
 
 	public override int GetHashCode() => HashCode.Combine(Destination, Source, MessageId, DeviceType, Priority);
 

@@ -11,6 +11,7 @@ builder.Services.AddSingleton<WaveSculptor>();
 builder.Services.AddSingleton<Telemetry>();
 builder.Services.AddSingleton<Encoder>(); // Only necessary for testing
 builder.Services.AddSingleton<MpptCollection>();
+builder.Services.AddSingleton<SteeringWheel>();
 builder.Services.AddSingleton<CanDecoder>();
 
 builder.Services.AddHostedService<TestingDataIncrementService>();

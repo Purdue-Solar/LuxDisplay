@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,25 +26,31 @@ public struct CurrentVector(float iq, float id) : IReadableCanPacket<CurrentVect
 
     public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
 
-	static bool IReadableCanPacket.TryRead(uint id, bool extended, ReadOnlySpan<byte> data, out IReadableCanPacket packet)
+	static bool IReadableCanPacket.TryRead(uint id, bool extended, ReadOnlySpan<byte> data, [NotNullWhen(true)] out IReadableCanPacket? readableCanPacket)
 	{
-		bool flag = TryRead(id, extended, data, out var genericPacket);
-		packet = genericPacket;
-		return flag;
+		if (!TryRead(id, extended, data, out var packet))
+		{
+			readableCanPacket = null;
+			return false;
+		}
+
+		readableCanPacket = packet;
+		return true;
 	}
 
 	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out CurrentVector packet)
     {
-        packet = default;
+		if (!IsValidId(id, isExtended) || data.Length < Size)
+		{
+			packet = default;
+			return false;
+		}
 
-        if (isExtended || id != CanId)
-            return false;
+		// Hack to avoid extra range checks
+		ReadOnlySpan<byte> a = MemoryMarshal.CreateReadOnlySpan(in data[0], Size);
 
-        if (data.Length < Size)
-            return false;
-
-        float iQ = BinaryPrimitives.ReadSingleLittleEndian(data);
-        float iD = BinaryPrimitives.ReadSingleLittleEndian(data.Slice(sizeof(float)));
+		float iQ = BinaryPrimitives.ReadSingleLittleEndian(a);
+        float iD = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
 
         packet = new CurrentVector(iQ, iD);
         return true;

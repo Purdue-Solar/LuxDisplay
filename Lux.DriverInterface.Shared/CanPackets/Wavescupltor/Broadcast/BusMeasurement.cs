@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,26 +21,33 @@ public struct BusMeasurement(float voltage, float current) : IReadableCanPacket<
 
     public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
 
-	static bool IReadableCanPacket.TryRead(uint id, bool extended, ReadOnlySpan<byte> data, out IReadableCanPacket packet)
+	static bool IReadableCanPacket.TryRead(uint id, bool extended, ReadOnlySpan<byte> data, [NotNullWhen(true)] out IReadableCanPacket? readableCanPacket)
 	{
-		bool flag = TryRead(id, extended, data, out var genericPacket);
-		packet = genericPacket;
-		return flag;
+		if (!TryRead(id, extended, data, out var packet))
+		{
+			readableCanPacket = null;
+			return false;
+		}
+
+		readableCanPacket = packet;
+		return true;
 	}
 
-	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out BusMeasurement measurement)
+	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out BusMeasurement packet)
     {
-        measurement = default;
-        if (isExtended || id != CanId)
-            return false;
+		if (!IsValidId(id, isExtended) || data.Length < Size)
+		{
+			packet = default;
+			return false;
+		}
 
-        if (data.Length < Size)
-            return false;
+		// Hack to avoid extra range checks
+		ReadOnlySpan<byte> a = MemoryMarshal.CreateReadOnlySpan(in data[0], Size);
 
-        float voltage = BinaryPrimitives.ReadSingleLittleEndian(data);
-        float current = BinaryPrimitives.ReadSingleLittleEndian(data.Slice(sizeof(float)));
+		float voltage = BinaryPrimitives.ReadSingleLittleEndian(a);
+        float current = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
 
-        measurement = new BusMeasurement(voltage, current);
+        packet = new BusMeasurement(voltage, current);
         return true;
     }
 }
