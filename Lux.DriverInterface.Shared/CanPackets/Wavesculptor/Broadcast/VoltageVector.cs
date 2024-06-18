@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast;
+namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
 public struct VoltageVector(float vq, float vd) : IReadableCanPacket<VoltageVector>
 {
 	public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.VoltageVector;

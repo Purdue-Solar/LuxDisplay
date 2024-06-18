@@ -3,12 +3,13 @@ using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast;
-public struct VelocityMeasurement(float motorVelocity, float vehicleVelocity) : IReadableCanPacket<VelocityMeasurement>
+namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
+public struct VelocityMeasurement(float motorVelocity, float vehicleVelocity) : IReadableCanPacket<VelocityMeasurement>, IWriteableCanPacket<VelocityMeasurement>
 {
     public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.VelocityMeasurement;
     public readonly uint Id => CanId;
@@ -53,6 +54,23 @@ public struct VelocityMeasurement(float motorVelocity, float vehicleVelocity) : 
         float vehicleVelocity = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
 
         packet = new VelocityMeasurement(motorVelocity, vehicleVelocity);
+        return true;
+    }
+
+	public readonly bool TryWrite(Span<byte> buffer, out int written)
+	{
+		if (buffer.Length < Size)
+		{
+			written = 0;
+			return false;
+		}
+
+        Span<byte> a = MemoryMarshal.CreateSpan(ref buffer[0], Size);
+
+        BinaryPrimitives.WriteSingleLittleEndian(a, MotorVelocity);
+        BinaryPrimitives.WriteSingleLittleEndian(a.Slice(sizeof(float)), VehicleVelocity);
+
+        written = Size;
         return true;
     }
 }

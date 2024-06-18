@@ -11,3 +11,8 @@ public enum MessageId : byte
 	Status = 0x00,
 	ChangeOutputs = 0x01
 }
+
+public static class PeripheralBase
+{
+	public const int MaxPeripheralCount = 8;
+}

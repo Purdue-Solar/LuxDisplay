@@ -7,22 +7,16 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast;
-public readonly struct SlipSpeed(float reserved, float slipSpeed) : IReadableCanPacket<SlipSpeed>
+namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
+public struct Identification(uint tritiumId, uint serialNumber) : IReadableCanPacket<Identification>
 {
-    public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.SlipSpeed;
-    public uint Id => CanId;
+    public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.Identification;
+    public readonly uint Id => CanId;
     public static bool IsExtended => false;
     public static int Size => 8;
 
-    /// <summary>
-    /// Reserved (degrees Celcius)
-    /// </summary>
-    public float Reserved { get; } = reserved;
-    /// <summary>
-    /// Slip speed when driving an induction motor (Hz)
-    /// </summary>
-    public float SlipSpeedHz { get; } = slipSpeed;
+    public uint TritiumId { get; set; } = tritiumId;
+    public uint SerialNumber { get; set; } = serialNumber;
 
     public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
 
@@ -38,7 +32,7 @@ public readonly struct SlipSpeed(float reserved, float slipSpeed) : IReadableCan
 		return true;
 	}
 
-	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out SlipSpeed packet)
+	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out Identification packet)
     {
 		if (!IsValidId(id, isExtended) || data.Length < Size)
 		{
@@ -49,10 +43,10 @@ public readonly struct SlipSpeed(float reserved, float slipSpeed) : IReadableCan
 		// Hack to avoid extra range checks
 		ReadOnlySpan<byte> a = MemoryMarshal.CreateReadOnlySpan(in data[0], Size);
 
-		float reserved = BinaryPrimitives.ReadSingleLittleEndian(a);
-        float slipSpeed = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
+		uint tritiumId = BinaryPrimitives.ReadUInt32LittleEndian(a);
+        uint serialNumber = BinaryPrimitives.ReadUInt32LittleEndian(a.Slice(sizeof(uint)));
 
-        packet = new SlipSpeed(reserved, slipSpeed);
+        packet = new Identification(serialNumber, tritiumId);
         return true;
     }
 }

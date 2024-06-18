@@ -1,4 +1,4 @@
-﻿using Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast;
+﻿using Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;

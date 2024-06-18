@@ -7,22 +7,22 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast;
-public struct HeatSinkMotorTemp(float motorTemp, float heatSinkTemp) : IReadableCanPacket<HeatSinkMotorTemp>
+namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
+public readonly struct SlipSpeed(float reserved, float slipSpeed) : IReadableCanPacket<SlipSpeed>
 {
-    public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.HeatSinkMotorTemp;
-    public readonly uint Id => CanId;
+    public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.SlipSpeed;
+    public uint Id => CanId;
     public static bool IsExtended => false;
     public static int Size => 8;
 
     /// <summary>
-    /// Internal temperature of the motor
+    /// Reserved (degrees Celcius)
     /// </summary>
-    public float MotorTemp { get; set; } = motorTemp;
+    public float Reserved { get; } = reserved;
     /// <summary>
-    /// Internal temperature of the Heat-sink (case)
+    /// Slip speed when driving an induction motor (Hz)
     /// </summary>
-    public float HeatSinkTemp { get; set; } = heatSinkTemp;
+    public float SlipSpeedHz { get; } = slipSpeed;
 
     public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
 
@@ -38,9 +38,9 @@ public struct HeatSinkMotorTemp(float motorTemp, float heatSinkTemp) : IReadable
 		return true;
 	}
 
-	public static bool TryRead(uint id, bool extended, ReadOnlySpan<byte> data, out HeatSinkMotorTemp packet)
+	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out SlipSpeed packet)
     {
-		if (!IsValidId(id, extended) || data.Length < Size)
+		if (!IsValidId(id, isExtended) || data.Length < Size)
 		{
 			packet = default;
 			return false;
@@ -49,10 +49,10 @@ public struct HeatSinkMotorTemp(float motorTemp, float heatSinkTemp) : IReadable
 		// Hack to avoid extra range checks
 		ReadOnlySpan<byte> a = MemoryMarshal.CreateReadOnlySpan(in data[0], Size);
 
-		float motorTemp = BinaryPrimitives.ReadSingleLittleEndian(a);
-        float heatSinkTemp = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
+		float reserved = BinaryPrimitives.ReadSingleLittleEndian(a);
+        float slipSpeed = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
 
-        packet = new HeatSinkMotorTemp(motorTemp, heatSinkTemp);
+        packet = new SlipSpeed(reserved, slipSpeed);
         return true;
     }
 }

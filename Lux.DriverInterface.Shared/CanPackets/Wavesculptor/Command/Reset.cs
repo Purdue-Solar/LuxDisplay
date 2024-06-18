@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Command;
+namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Command;
 public readonly struct Reset : IWriteableCanPacket<Reset>
 {
 	public static uint CanId => WavesculptorBase.CommandBaseId + (uint)CommandId.Reset;

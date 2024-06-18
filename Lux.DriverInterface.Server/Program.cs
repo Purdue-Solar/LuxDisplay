@@ -1,6 +1,7 @@
 using Lux.DataRadio;
 using Microsoft.AspNetCore.ResponseCompression;
 using Lux.DriverInterface.Shared;
+using System.Device.Gpio;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://*:61248", "https://*:61249");
@@ -11,15 +12,30 @@ builder.Services.AddSingleton<WaveSculptor>();
 builder.Services.AddSingleton<Telemetry>();
 builder.Services.AddSingleton<Encoder>(); // Only necessary for testing
 builder.Services.AddSingleton<MpptCollection>();
+builder.Services.AddSingleton<PeripheralCollection>();
 builder.Services.AddSingleton<SteeringWheel>();
 builder.Services.AddSingleton<CanDecoder>();
 
-builder.Services.AddHostedService<TestingDataIncrementService>();
-//builder.Services.AddHostedService<CANSendService>();
+//builder.Services.AddHostedService<TestingDataIncrementService>();
 
+builder.Services.AddSingleton<RadioService>();
 
-//builder.Services.AddHostedService<EncoderService>();
+if (Environment.OSVersion.Platform == PlatformID.Unix)
+{
+	builder.Services.AddSingleton<ICanServiceBase, UnixCanServiceBase>();
+}
+else
+{
+    builder.Services.AddSingleton<IPacketQueue, PacketQueue>();
+    builder.Services.AddHostedService<PacketGeneratorService>();
+	builder.Services.AddSingleton<ICanServiceBase, DummyCanServiceBase>();
+}
+
+builder.Services.AddSingleton<CanSendService>();
 builder.Services.AddHostedService<CanReceiveService>();
+
+builder.Services.AddSingleton<GpioWrapper>();
+builder.Services.AddHostedService<PedalService>();
 
 builder.Services.AddBlazorBootstrap(); // Add this line
 builder.Services.AddRazorPages();
@@ -38,6 +54,7 @@ else
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
 app.UseHttpsRedirection();
 
 app.UseBlazorFrameworkFiles();
@@ -45,9 +62,8 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-
 app.MapRazorPages();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
 
-app.Run();
+await app.RunAsync();

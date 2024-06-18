@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Lux.DriverInterface.Shared;
 using Lux.DriverInterface.Shared.CanPackets.Peripherals;
-using Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast;
+using Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
 using Lux.DriverInterface.Shared.CanPackets.Elmar.Broadcast;
 using Lux.DriverInterface.Shared.CanPackets.Steering;
 using Microsoft.Extensions.Hosting;
@@ -18,18 +18,19 @@ using Microsoft.VisualBasic;
 using SocketCANSharp;
 using SocketCANSharp.Network;
 
-using WavesculptorStatus = Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast.Status;
+using WavesculptorStatus = Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast.Status;
 using PeripheralsStatus = Lux.DriverInterface.Shared.CanPackets.Peripherals.Status;
 using MpptStatus = Lux.DriverInterface.Shared.CanPackets.Elmar.Broadcast.Status;
 using SteeringStatus = Lux.DriverInterface.Shared.CanPackets.Steering.Status;
-using System.Runtime.CompilerServices;
 
 namespace Lux.DataRadio
 {
-	public class CanReceiveService(WaveSculptor wsc, MpptCollection mppts, SteeringWheel steering, Telemetry telemetry, CanDecoder decoder) : BackgroundService
+	public class CanReceiveService(ICanServiceBase serviceBase, WaveSculptor wsc, MpptCollection mppts, PeripheralCollection peripherals, SteeringWheel steering, Telemetry telemetry, CanDecoder decoder) : BackgroundService
 	{
+		protected ICanServiceBase ServiceBase { get; } = serviceBase;
 		protected WaveSculptor WaveSculptor { get; } = wsc;
 		protected MpptCollection Mppts { get; } = mppts;
+		protected PeripheralCollection Peripherals { get; } = peripherals;
 		protected SteeringWheel SteeringWheel { get; } = steering;
 		protected Telemetry Telemetry { get; } = telemetry;
 
@@ -39,22 +40,20 @@ namespace Lux.DataRadio
 		{
 			AddWavesculptorDecoders();
 			AddMpptDecoders();
+			AddPeripheralDecoders();
 			AddSteeringWheelDecoders();
 		}
 
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 		{
+			ServiceBase.Init();
 			Init();
 
-			using var rawCanSocket = new RawCanSocket();
-			CanNetworkInterface can0 = CanNetworkInterface.GetAllInterfaces(true).First(iface => iface.Name.Equals("can0"));
-
-			rawCanSocket.Bind(can0);
 			while (!stoppingToken.IsCancellationRequested)
 			{
 				//Reading from CAN
 				CanFrame frame = default;
-				int bytesRead = await Task.Run(() => rawCanSocket.Read(out frame));
+				int bytesRead = await Task.Run(() => ServiceBase.Read(out frame), stoppingToken);
 				if (bytesRead != 0)
 				{
 					bool isExtended = frame.CanId >> 31 == 1;
@@ -84,6 +83,16 @@ namespace Lux.DataRadio
 				SteeringWheel.HornActive = (buttons & SteeringStatus.ButtonFlags.Horn) != 0;
 
 				SteeringWheel.Page = status.Page;
+			});
+		}
+
+		private void AddPeripheralDecoders()
+		{
+			Decoder.AddPacketDecoder((PeripheralsStatus status) =>
+			{
+				byte id = (byte)(status.CanId.Source - CanIds.PeripheralsBase);
+
+				Peripherals[id].Outputs = status.Outputs;
 			});
 		}
 
@@ -204,6 +213,14 @@ namespace Lux.DataRadio
 			});
 
 			Decoder.AddPacketDecoder((SlipSpeed slip) => WaveSculptor.SlipSpeed = slip.SlipSpeedHz);
+		}
+
+		public override void Dispose()
+		{
+			if (ServiceBase is IDisposable disposable)
+				disposable.Dispose();
+			base.Dispose();
+			GC.SuppressFinalize(this);
 		}
 	}
 }

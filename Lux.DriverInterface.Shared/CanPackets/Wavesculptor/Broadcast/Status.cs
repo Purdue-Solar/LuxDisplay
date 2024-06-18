@@ -7,8 +7,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast;
-public struct Status(Status.LimitFlags limits, Status.ErrorFlags errors, ushort activeMotor, byte txErrors, byte rxErrors) : IReadableCanPacket<Status>
+namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
+public struct Status(Status.LimitFlags limits, Status.ErrorFlags errors, ushort activeMotor, byte txErrors, byte rxErrors) : IReadableCanPacket<Status>, IWriteableCanPacket<Status>
 {
     public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.Status;
     public readonly uint Id => CanId;
@@ -54,6 +54,26 @@ public struct Status(Status.LimitFlags limits, Status.ErrorFlags errors, ushort 
         byte rxErrors = a[sizeof(ushort) * 3 + 1];
 
         packet = new Status(limits, errors, activeMotor, txErrors, rxErrors);
+        return true;
+    }
+
+    public readonly bool TryWrite(Span<byte> buffer, out int bytesWritten)
+    {
+        if (buffer.Length < Size)
+        {
+            bytesWritten = 0;
+            return false;
+        }
+
+        Span<byte> a = MemoryMarshal.CreateSpan(ref buffer[0], Size);
+
+        BinaryPrimitives.WriteUInt16LittleEndian(a, (ushort)Limits);
+        BinaryPrimitives.WriteUInt16LittleEndian(a.Slice(sizeof(ushort)), (ushort)Errors);
+        BinaryPrimitives.WriteUInt16LittleEndian(a.Slice(sizeof(ushort) * 2), ActiveMotor);
+        a[sizeof(ushort) * 3] = TransmitErrorCount;
+        a[sizeof(ushort) * 3 + 1] = ReceiveErrorCount;
+
+        bytesWritten = Size;
         return true;
     }
 

@@ -7,22 +7,22 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast;
-public struct Voltage15V(float reserved, float voltage15) : IReadableCanPacket<Voltage15V>
+namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
+public readonly struct OdometerBusAmpHrs(float odometer, float dcBusAmpHrs) : IReadableCanPacket<OdometerBusAmpHrs>
 {
-    public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.Voltage15V;
-    public readonly uint Id => CanId;
+    public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.OdometerBusAmpHrs;
+    public uint Id => CanId;
     public static bool IsExtended => false;
     public static int Size => 8;
 
     /// <summary>
-    /// Reserved
+    /// Distance the vehicle has travelled since reset (m)
     /// </summary>
-    public float Reserved { get; set; } = reserved;
+    public float Odometer { get; } = odometer;
     /// <summary>
-    /// Actual voltage level of the 15V power rail
+    /// Charge flow into the controller DC bus from the time of reset (Ah)
     /// </summary>
-    public float Voltage15 { get; set; } = voltage15;
+    public float DcBusAmpHrs { get; } = dcBusAmpHrs;
 
     public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
 
@@ -38,7 +38,7 @@ public struct Voltage15V(float reserved, float voltage15) : IReadableCanPacket<V
 		return true;
 	}
 
-	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out Voltage15V packet)
+	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out OdometerBusAmpHrs packet)
     {
 		if (!IsValidId(id, isExtended) || data.Length < Size)
 		{
@@ -49,10 +49,10 @@ public struct Voltage15V(float reserved, float voltage15) : IReadableCanPacket<V
 		// Hack to avoid extra range checks
 		ReadOnlySpan<byte> a = MemoryMarshal.CreateReadOnlySpan(in data[0], Size);
 
-		float reserved = BinaryPrimitives.ReadSingleLittleEndian(a);
-        float voltage15 = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
+		float odometer = BinaryPrimitives.ReadSingleLittleEndian(a);
+        float dcBusAmpHrs = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
 
-        packet = new Voltage15V(reserved, voltage15);
+        packet = new OdometerBusAmpHrs(odometer, dcBusAmpHrs);
         return true;
     }
 }

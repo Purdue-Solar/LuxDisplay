@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Lux.DriverInterface.Shared.CanPackets.Steering;
-public readonly struct Status(uint id, Status.ButtonFlags buttons, byte page, byte reserved, float targetSpeed) : IReadableCanPacket<Status>
+public readonly struct Status(uint id, Status.ButtonFlags buttons, byte page, byte reserved, float targetSpeed) : IReadableCanPacket<Status>, IWriteableCanPacket<Status>
 {
 	public PsrCanId CanId { get; } = id;
 	public uint Id => CanId.ToInteger();
@@ -56,6 +56,23 @@ public readonly struct Status(uint id, Status.ButtonFlags buttons, byte page, by
 		float targetSpeed = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(4));
 
 		packet = new Status(id, buttons, page, reserved, targetSpeed);
+		return true;
+	}
+
+	public readonly bool TryWrite(Span<byte> buffer, out int written)
+	{
+		if (buffer.Length < Size)
+		{
+			written = 0;
+			return false;
+		}
+
+		BinaryPrimitives.WriteUInt16LittleEndian(buffer, (ushort)Buttons);
+		buffer[sizeof(ushort)] = Page;
+        buffer[sizeof(ushort) + 1] = Reserved;
+		BinaryPrimitives.WriteSingleLittleEndian(buffer.Slice(4), TargetSpeed);
+
+        written = Size;
 		return true;
 	}
 

@@ -7,8 +7,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast;
-public struct BusMeasurement(float voltage, float current) : IReadableCanPacket<BusMeasurement>
+namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
+public struct BusMeasurement(float voltage, float current) : IReadableCanPacket<BusMeasurement>, IWriteableCanPacket<BusMeasurement>
 {
     public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.BusMeasurement;
     public readonly uint Id => CanId;
@@ -49,5 +49,22 @@ public struct BusMeasurement(float voltage, float current) : IReadableCanPacket<
 
         packet = new BusMeasurement(voltage, current);
         return true;
+    }
+
+	public readonly bool TryWrite(Span<byte> buffer, out int written)
+	{
+		if (buffer.Length < Size)
+		{
+			written = 0;
+			return false;
+		}
+
+        Span<byte> a = MemoryMarshal.CreateSpan(ref buffer[0], Size);
+
+        BinaryPrimitives.WriteSingleLittleEndian(a, BusVoltage);
+        BinaryPrimitives.WriteSingleLittleEndian(a.Slice(sizeof(float)), BusCurrent);
+
+        written = Size;
+		return true;
     }
 }

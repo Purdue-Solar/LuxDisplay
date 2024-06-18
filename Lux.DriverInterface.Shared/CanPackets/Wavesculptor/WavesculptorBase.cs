@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavescupltor;
+namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor;
 
 public enum BroadcastId
 {

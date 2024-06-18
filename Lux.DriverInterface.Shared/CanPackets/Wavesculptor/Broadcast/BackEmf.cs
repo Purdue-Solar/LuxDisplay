@@ -7,22 +7,22 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast;
-public struct CurrentVector(float iq, float id) : IReadableCanPacket<CurrentVector>
+namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
+public struct BackEmf(float bemfQ, float bemfD) : IReadableCanPacket<BackEmf>
 {
-    public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.CurrentVector;
+    public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.BackEmf;
     public readonly uint Id => CanId;
     public static bool IsExtended => false;
     public static int Size => 8;
 
     /// <summary>
-    /// Imaginary component of the applied non-rotating current vector to the motor (A)
+    /// The peak of the phase to neutral motor voltage (V)
     /// </summary>
-    public float CurrentQ { get; set; } = iq;
+    public float BemfQ { get; set; } = bemfQ;
     /// <summary>
-    /// Real component of the applied non-rotating voltage current vector to the motor (A)
+    /// By definition this value is always 0 (V)
     /// </summary>
-    public float CurrentD { get; set; } = id;
+    public float BemfD { get; set; } = bemfD;
 
     public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
 
@@ -38,21 +38,21 @@ public struct CurrentVector(float iq, float id) : IReadableCanPacket<CurrentVect
 		return true;
 	}
 
-	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out CurrentVector packet)
+	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out BackEmf packet)
     {
-		if (!IsValidId(id, isExtended) || data.Length < Size)
-		{
-			packet = default;
+        if (!IsValidId(id, isExtended) || data.Length < Size)
+        {
+            packet = default;
 			return false;
 		}
 
 		// Hack to avoid extra range checks
 		ReadOnlySpan<byte> a = MemoryMarshal.CreateReadOnlySpan(in data[0], Size);
 
-		float iQ = BinaryPrimitives.ReadSingleLittleEndian(a);
-        float iD = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
+		float bq = BinaryPrimitives.ReadSingleLittleEndian(a);
+        float bd = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
 
-        packet = new CurrentVector(iQ, iD);
+        packet = new BackEmf(bq, bd);
         return true;
     }
 }

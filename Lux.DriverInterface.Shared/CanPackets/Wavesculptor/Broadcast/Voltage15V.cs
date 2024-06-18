@@ -7,22 +7,22 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast;
-public struct PhaseCurrent(float phaseBCurrent, float phaseCCurent) : IReadableCanPacket<PhaseCurrent>
+namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
+public struct Voltage15V(float reserved, float voltage15) : IReadableCanPacket<Voltage15V>
 {
-    public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.PhaseCurrent;
+    public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.Voltage15V;
     public readonly uint Id => CanId;
     public static bool IsExtended => false;
     public static int Size => 8;
 
     /// <summary>
-    /// The current in phase B (A rms)
+    /// Reserved
     /// </summary>
-    public float PhaseBCurrent { get; set; } = phaseBCurrent;
+    public float Reserved { get; set; } = reserved;
     /// <summary>
-    /// The current in phase C (A rms)
+    /// Actual voltage level of the 15V power rail
     /// </summary>
-    public float PhaseCCurrent { get; set; } = phaseCCurent;
+    public float Voltage15 { get; set; } = voltage15;
 
     public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
 
@@ -38,7 +38,7 @@ public struct PhaseCurrent(float phaseBCurrent, float phaseCCurent) : IReadableC
 		return true;
 	}
 
-	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out PhaseCurrent packet)
+	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out Voltage15V packet)
     {
 		if (!IsValidId(id, isExtended) || data.Length < Size)
 		{
@@ -49,10 +49,10 @@ public struct PhaseCurrent(float phaseBCurrent, float phaseCCurent) : IReadableC
 		// Hack to avoid extra range checks
 		ReadOnlySpan<byte> a = MemoryMarshal.CreateReadOnlySpan(in data[0], Size);
 
-		float phaseBCurrent = BinaryPrimitives.ReadSingleLittleEndian(a);
-        float phaseCCurent = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
+		float reserved = BinaryPrimitives.ReadSingleLittleEndian(a);
+        float voltage15 = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
 
-        packet = new PhaseCurrent(phaseBCurrent, phaseCCurent);
+        packet = new Voltage15V(reserved, voltage15);
         return true;
     }
 }

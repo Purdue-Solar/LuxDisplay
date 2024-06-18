@@ -7,22 +7,22 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavescupltor.Broadcast;
-public readonly struct OdometerBusAmpHrs(float odometer, float dcBusAmpHrs) : IReadableCanPacket<OdometerBusAmpHrs>
+namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
+public readonly struct DspBoardTemp(float dspBoardTemp, float reserved) : IReadableCanPacket<DspBoardTemp>
 {
-    public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.OdometerBusAmpHrs;
-    public uint Id => CanId;
+    public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.DspBoardTemp;
+    public readonly uint Id => CanId;
     public static bool IsExtended => false;
     public static int Size => 8;
 
     /// <summary>
-    /// Distance the vehicle has travelled since reset (m)
+    /// Temperature of the DSP board (degrees Celsius)
     /// </summary>
-    public float Odometer { get; } = odometer;
+    public float DspTemp { get; } = reserved;
     /// <summary>
-    /// Charge flow into the controller DC bus from the time of reset (Ah)
+    /// Reserved
     /// </summary>
-    public float DcBusAmpHrs { get; } = dcBusAmpHrs;
+    public float Reserved { get; } = dspBoardTemp;
 
     public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
 
@@ -38,9 +38,9 @@ public readonly struct OdometerBusAmpHrs(float odometer, float dcBusAmpHrs) : IR
 		return true;
 	}
 
-	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out OdometerBusAmpHrs packet)
+	public static bool TryRead(uint id, bool extended, ReadOnlySpan<byte> data, out DspBoardTemp packet)
     {
-		if (!IsValidId(id, isExtended) || data.Length < Size)
+		if (!IsValidId(id, extended) || data.Length < Size)
 		{
 			packet = default;
 			return false;
@@ -49,10 +49,10 @@ public readonly struct OdometerBusAmpHrs(float odometer, float dcBusAmpHrs) : IR
 		// Hack to avoid extra range checks
 		ReadOnlySpan<byte> a = MemoryMarshal.CreateReadOnlySpan(in data[0], Size);
 
-		float odometer = BinaryPrimitives.ReadSingleLittleEndian(a);
-        float dcBusAmpHrs = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
+		float dspTemp = BinaryPrimitives.ReadSingleLittleEndian(a);
+        float reserved = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
 
-        packet = new OdometerBusAmpHrs(odometer, dcBusAmpHrs);
+        packet = new DspBoardTemp(dspTemp, reserved);
         return true;
     }
 }
