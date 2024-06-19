@@ -56,10 +56,31 @@ public class RadioService(IConfiguration config, ILogger<RadioService> logger) :
 
 		new Thread(FileLoggingThread).Start();
 
-		SerialPort = new SerialPort(Device, BaudRate, Parity, DataBits, StopBits);
-		SerialPort.Open();
-		IsInitialized = true;
+        if (!TryOpenSerial())
+			Logger.LogWarning("Failed to open serial port {portname}", Device);
+
+        IsInitialized = true;
 	}
+
+	private bool TryOpenSerial()
+	{
+		if (SerialPort is not null)
+            return true;
+
+		try
+		{
+			SerialPort = new SerialPort(Device, BaudRate, Parity, DataBits, StopBits);
+			SerialPort.Open();
+			
+			return true;
+		}
+		catch
+		{
+			SerialPort?.Dispose();
+			SerialPort = null;
+			return false;
+		}
+    }
 
 	public void Write(CanFrame canFrame)
 	{
@@ -78,17 +99,20 @@ public class RadioService(IConfiguration config, ILogger<RadioService> logger) :
 		SerialPacket packet = new SerialPacket(id, timestamp, isExtended, canFrame.Length, canFrame.Data);
 		
 		packet.TryWrite(buffer);
-		SerialPort.BaseStream.Write(buffer.AsSpan(0, SerialPacket.Size));
 
+		SerialPort?.BaseStream.Write(buffer.AsSpan(0, SerialPacket.Size));
 		_fileBuffer.Enqueue(buffer);
 
 		if (++PacketCount == SyncRate)
 		{
+			if (SerialPort is null)
+				TryOpenSerial();
+
 			Span<byte> syncBuffer = stackalloc byte[SerialPacket.Size];
 			PacketCount = 0;
 			
 			SerialPacket.SyncPacket.TryWrite(syncBuffer);
-			SerialPort.BaseStream.Write(syncBuffer);
+			SerialPort?.BaseStream.Write(syncBuffer);
         }
 	}
 
