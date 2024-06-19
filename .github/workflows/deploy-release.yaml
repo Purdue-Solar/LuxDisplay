@@ -1,0 +1,40 @@
+name: Deploy Debug
+
+on:
+  push:
+    branches: [ "release" ]
+  pull_request:
+    branches: [ "release" ]
+
+env:
+  PUBLISH_PATH: "/app"
+  DOTNET_ROOT: "/lib/dotnet"
+  DOTNET: "/lib/dotnet/dotnet"
+
+jobs:
+
+  deploy-web-app:
+    runs-on: self-hosted
+    environment: debug
+    steps:
+    - uses: actions/checkout@v4
+    - name: Restore Dependencies
+      run: ${{ env.DOTNET }} restore
+
+    - name: Build
+      run: ${{ env.DOTNET }} build Lux.DriverInterface.Server
+
+    - name: Stop Services
+      run: |
+        sudo systemctl stop lux-display-window
+        sudo systemctl stop lux-display
+    - name: Publish
+      run: |
+        ${{ env.DOTNET }} publish Lux.DriverInterface.Server --no-build --configuration Release --output ${{ env.PUBLISH_PATH }}
+        chown -R app:display ${{ env.PUBLISH_PATH }}
+    - name: Start Services
+      run: |
+        sudo systemctl restart lux-display
+        sudo systemctl restart lux-display-window
+    
+
