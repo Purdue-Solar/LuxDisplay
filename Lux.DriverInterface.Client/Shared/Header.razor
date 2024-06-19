@@ -13,7 +13,7 @@
     @if(DisplayVelocities)
     {
         <div class="header-item">
-            <h1>@((int)(ws.VehicleVelocity * Conversions.MpsToMph))</h1> <h4>MPH</h4>
+            <h1 class="@(steering.CruiseActive ? "cruise-active" : string.Empty)">@((int)(ws.VehicleVelocity * Conversions.MpsToMph))</h1> <h4>mph</h4>
         </div>
     }
     <div class="header=item">
@@ -22,7 +22,7 @@
     @if (DisplayVelocities)
     {
         <div class="header-item">
-            <h1>@((int)(ws.MotorVelocity))</h1> <h4>RPM</h4>
+            <h1>@((int)(ws.MotorVelocity))</h1> <h4>rpm</h4>
 	    </div>   
     }
     <div class="header-item">

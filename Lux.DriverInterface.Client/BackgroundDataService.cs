@@ -22,14 +22,15 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 
 	public event Action? OnChange;
 
-	public Task StartAsync(CancellationToken cancellation = default)
+	public async Task StartAsync(CancellationToken cancellation = default)
 	{
 		_ = Task.Run(() => RetrieveWaveSculptorDataAsync(cancellation), cancellation);
+		await Task.Delay(50, cancellation);
 		_ = Task.Run(() => RetrieveSteeringWheelDataAsync(cancellation), cancellation);
-		_ = Task.Run(() => RetrieveMpptCollectionDataAsync(cancellation), cancellation);
-		_ = Task.Run(() => RetrieveEncoderDataAsync(cancellation), cancellation);
-
-		return Task.CompletedTask;
+        await Task.Delay(50, cancellation);
+        _ = Task.Run(() => RetrieveMpptCollectionDataAsync(cancellation), cancellation);
+        await Task.Delay(50, cancellation);
+        _ = Task.Run(() => RetrieveEncoderDataAsync(cancellation), cancellation);
 	}
 
 	const double WaveSculptorPeriod = 250;
@@ -110,7 +111,7 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 		timer.Dispose();
 	}
 
-	private const double MpptCollectionPeriod = 500;
+	private const double MpptCollectionPeriod = 1000;
 	private async Task RetrieveMpptCollectionDataAsync(CancellationToken token)
 	{
         var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(MpptCollectionPeriod));
@@ -157,7 +158,7 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 		timer.Dispose();
 	}
 
-	private const double EncoderPeriod = 250;
+	private const double EncoderPeriod = 500;
 	private async Task RetrieveEncoderDataAsync(CancellationToken token)
 	{
         var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(EncoderPeriod));

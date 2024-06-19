@@ -21,7 +21,7 @@
 			<div class="label">Cabin Temp &degC</div>
 		</div>
 		<div class="speedometer">
-			<div class="value">@((int)(ws.VehicleVelocity * Conversions.MpsToMph))</div>
+			<div class="value @(steering.CruiseActive ? "cruise-active" : string.Empty)">@((int)(ws.VehicleVelocity * Conversions.MpsToMph))</div>
 			<div class="label">mph</div>
 		</div>
 		<div class="speedometer">
