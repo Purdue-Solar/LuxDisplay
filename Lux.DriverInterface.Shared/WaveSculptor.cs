@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Lux.DriverInterface.Shared.CanPackets.Wavesculptor;
-using ErrorFlags = Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast.Status.ErrorFlags;
-using LimitFlags = Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast.Status.LimitFlags;
+using Lux.DriverInterface.Shared.CanPackets.WaveSculptor;
+using ErrorFlags = Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast.Status.ErrorFlags;
+using LimitFlags = Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast.Status.LimitFlags;
 
 namespace Lux.DriverInterface.Shared;
 public class WaveSculptor
@@ -36,4 +36,16 @@ public class WaveSculptor
     public float DcBusAmpHrs { get; set; }
     public float Odometer { get; set; }
     public float SlipSpeed { get; set; }
+
+    public float InputPower => BusVoltage * BusCurrent;
+    public float OutputPower
+    {
+        get
+        {
+            float pd = Vd * CurrentD;
+            float pq = Vq * CurrentQ;
+
+            return MathF.Sqrt(pd * pd + pq * pq);
+        }
+    }
 }

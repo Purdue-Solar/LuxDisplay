@@ -17,4 +17,5 @@ public class SteeringWheel
 	public bool CruiseDownActive { get; set; }
 	public bool HornActive { get; set; }
 	public byte Page { get; set; }
+	public float TargetSpeed { get; set; }
 }

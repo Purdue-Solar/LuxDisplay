@@ -7,10 +7,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
+namespace Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast;
 public struct HeatSinkMotorTemp(float motorTemp, float heatSinkTemp) : IReadableCanPacket<HeatSinkMotorTemp>
 {
-    public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.HeatSinkMotorTemp;
+    public static uint CanId => WaveSculptorBase.BroadcastBaseId + (uint)BroadcastId.HeatSinkMotorTemp;
     public readonly uint Id => CanId;
     public static bool IsExtended => false;
     public static int Size => 8;

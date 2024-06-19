@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Lux.DriverInterface.Shared;
 using Lux.DriverInterface.Shared.CanPackets.Peripherals;
-using Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
+using Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast;
 using Lux.DriverInterface.Shared.CanPackets.Elmar.Broadcast;
 using Lux.DriverInterface.Shared.CanPackets.Steering;
 using Microsoft.Extensions.Hosting;
@@ -18,7 +18,7 @@ using Microsoft.VisualBasic;
 using SocketCANSharp;
 using SocketCANSharp.Network;
 
-using WavesculptorStatus = Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast.Status;
+using WaveSculptorStatus = Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast.Status;
 using PeripheralsStatus = Lux.DriverInterface.Shared.CanPackets.Peripherals.Status;
 using MpptStatus = Lux.DriverInterface.Shared.CanPackets.Elmar.Broadcast.Status;
 using SteeringStatus = Lux.DriverInterface.Shared.CanPackets.Steering.Status;
@@ -38,7 +38,7 @@ namespace Lux.DataRadio
 
 		private void Init()
 		{
-			AddWavesculptorDecoders();
+			AddWaveSculptorDecoders();
 			AddMpptDecoders();
 			AddPeripheralDecoders();
 			AddSteeringWheelDecoders();
@@ -83,6 +83,8 @@ namespace Lux.DataRadio
 				SteeringWheel.HornActive = (buttons & SteeringStatus.ButtonFlags.Horn) != 0;
 
 				SteeringWheel.Page = status.Page;
+
+				SteeringWheel.TargetSpeed = status.TargetSpeed;
 			});
 		}
 
@@ -146,9 +148,9 @@ namespace Lux.DataRadio
 			});
 		}
 
-		private void AddWavesculptorDecoders()
+		private void AddWaveSculptorDecoders()
 		{
-			Decoder.AddPacketDecoder((WavesculptorStatus status) =>
+			Decoder.AddPacketDecoder((WaveSculptorStatus status) =>
 			{
 				WaveSculptor.LimitFlags = status.Limits;
 				WaveSculptor.ErrorFlags = status.Errors;

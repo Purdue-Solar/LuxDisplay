@@ -7,10 +7,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
+namespace Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast;
 public struct Voltage15V(float reserved, float voltage15) : IReadableCanPacket<Voltage15V>
 {
-    public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.Voltage15V;
+    public static uint CanId => WaveSculptorBase.BroadcastBaseId + (uint)BroadcastId.Voltage15V;
     public readonly uint Id => CanId;
     public static bool IsExtended => false;
     public static int Size => 8;

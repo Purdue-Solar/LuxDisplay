@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor;
+namespace Lux.DriverInterface.Shared.CanPackets.WaveSculptor;
 
 public enum BroadcastId
 {
@@ -34,7 +34,7 @@ public enum CommandId
 	ChangeMotor = 0x12
 }
 
-public static class WavesculptorBase
+public static class WaveSculptorBase
 {
 	public const uint BroadcastBaseId = 0x400;
 	public const uint CommandBaseId = 0x500;

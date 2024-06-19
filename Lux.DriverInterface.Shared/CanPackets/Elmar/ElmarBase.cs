@@ -34,5 +34,5 @@ public static class ElmarBase
 	public const int DeviceIdMaskShifted = 0x00F;
 	public const uint DeviceIdMask = 0x0F0;
 
-	public const int MaxMpptCount = 16;
+	public const int MaxMpptCount = 4;
 }

@@ -32,7 +32,7 @@ public class MpptCollection
 	public float TotalInputPower => Mppts.Sum(mppt => mppt.InputVoltage * mppt.InputCurrent);
 	public float TotalOutputPower => Mppts.Sum(mppt => mppt.OutputVoltage * mppt.OutputCurrent);
 
-	public float AverageEffiecency => TotalOutputPower / TotalInputPower;
+	public float AverageEffiecency => TotalInputPower == 0 ? 0 : TotalOutputPower / TotalInputPower;
 
 	public ErrorFlags AggregateFlags => Mppts.Aggregate(ErrorFlags.None, (v, mppt) => v | mppt.ErrorFlags);
 

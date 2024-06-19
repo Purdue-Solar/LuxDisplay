@@ -8,10 +8,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
+namespace Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast;
 public struct VelocityMeasurement(float motorVelocity, float vehicleVelocity) : IReadableCanPacket<VelocityMeasurement>, IWriteableCanPacket<VelocityMeasurement>
 {
-    public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.VelocityMeasurement;
+    public static uint CanId => WaveSculptorBase.BroadcastBaseId + (uint)BroadcastId.VelocityMeasurement;
     public readonly uint Id => CanId;
     public static bool IsExtended => false;
     public static int Size => 8;

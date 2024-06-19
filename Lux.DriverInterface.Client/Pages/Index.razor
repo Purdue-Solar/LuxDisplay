@@ -2,205 +2,73 @@
 @using BlazorBootstrap;
 @using Lux.DriverInterface.Shared;
 @using static Lux.DriverInterface.Shared.Shared;
-@inject TimerService TimerService;
-@inject Header header
-@inject HttpClient Http
 @inject WaveSculptor ws
-@inject EMU emu
-@inject NavigationManager NavigationManager
-@inject Encoder amt
-<PageTitle>Home</PageTitle>
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Electric Car Dashboard</title>
-    <style>
-    /*Generated Code*/
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            text-align: center;
-        }
-        h1 {
-            margin-bottom: 20px;
-        }
-        .speedometer {
-            display: inline-block;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            padding: 80px;
-            font-size:30px;
-            margin-bottom: 20px;
-            margin-right: 20px;
-            margin-left: 20px;
-        }
-        .speedometer .value {
-            font-size: 4em;
-            font-weight: bold;
-        }
-        .speedometer .label {
-            font-size: 1.5em;
-        }
-        .speedometer .icon {
-            position: absolute;
-            bottom: -20px;
-            width: 50px;
-            height: 50px;
-            background-color: #ccc;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .speedometer .icon img {
-            max-width: 80%;
-            max-height: 80%;
-        }
+@inject MpptCollection mppts;
+@inject Encoder encoder;
+@inject Blinkers blinkers;
+@inject SteeringWheel steering;
+@inject BackgroundDataService backgroundData;
+@inject NavigationManager NavigationManager;
 
-        .additional-speedometers {
-            display: flex;
-            justify-content: space-between; /* Adjust alignment as needed */
-            margin-top: 20px; /* Adjust spacing as needed */
-        }
+<PageTitle>Lux Dashboard</PageTitle>
 
-        .additional-speedometer {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+<Header DisplayVelocities="false"></Header>
 
-        .additional-speedometer .value {
-            font-size: 3em; /* Adjust size as needed */
-            position: absolute;
-            top: 40%;
-
-        }
-
-        .additional-speedometer .label {
-            font-size: 2em; /* Adjust size as needed */
-            color: #999; /* Adjust color as needed */
-            position: absolute;
-            top: 47.5%;
-        }
-        .blinker-main-page{
-            position: absolute;
-            top: 5%;
-            font-size: 70px;
-        }
-        .row-data
-        {
-            display:flex;
-            flex-direction: row;
-            justify-content: center;
-        }
-        .symbol
-        {
-            font-size: 50px;
-            padding: 5px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container" style="border-color:Background">
-        <div class="additional-speedometers">
-            <div class="additional-speedometer">
-                <div class="blinker-main-page"><Icon Name="IconName.ArrowLeftCircleFill" Color="IconColor.Muted" /></div>
-                <div class="value">20</div>
-                <div class="label">Power in (W)</div>
-            </div>
-            <div class="speedometer">
-                <div class="value">10</div>
-                <div class="label">W</div>
-            </div>
-            <div class="speedometer">
-                <div class="value">15</div>
-                <div class="label">mph</div>
-            </div>
-            <div class="additional-speedometer">
-                <div class="blinker-main-page"><Icon Name="IconName.ArrowRightCircleFill" Color="IconColor.Muted" /></div>
-                <div class="value">20</div>
-                <div class="label">cabin temp &deg</div>
-            </div>
-        </div>
-        <div class="row-data">
-            <h1 class="symbol"><Icon Name="IconName.Battery" Color="IconColor.Muted" /></h1>
-            <h1 class="symbol"><Icon Name="IconName.BrightnessHigh" Color="IconColor.Muted" /></h1>
-            <h1 class="symbol"><Icon Name="IconName.ExclamationTriangle" Color="IconColor.Muted" /></h1>
-            <h1 class="symbol"><Icon Name="IconName.Gear" Color="IconColor.Muted" /></h1>
-            <h1 class="symbol"><Icon Name="IconName.ThermometerHigh" Color="IconColor.Muted" /></h1>
-        </div>
-    </div>
-</body>
-
+<div class="container">
+	<div class="additional-speedometers">
+		<div class="additional-speedometer">
+			<div class="value">20</div>
+			<div class="label">Cabin Temp &degC</div>
+		</div>
+		<div class="speedometer">
+			<div class="value">@((int)(ws.VehicleVelocity * Conversions.MpsToMph))</div>
+			<div class="label">mph</div>
+		</div>
+		<div class="speedometer">
+			<div class="value">@((ws.InputPower * Conversions.WattToKW).ToString("N2"))</div>
+			<div class="label">kW</div>
+		</div>
+		<div class="additional-speedometer">
+			<div class="value">@(mppts.TotalInputPower.ToString("N0"))</div>
+			<div class="label">Power In (W)</div>
+		</div>
+	</div>
+	<div class="row-data">
+		<h1 style="@(!steering.CruiseActive ? "color: white" : string.Empty)">Cruise Control: @((int)(steering.TargetSpeed * Conversions.MpsToMph)) mph</h1>
+	</div>
+	<div class="row-data">
+		<div class="symbol"><h1><Icon Name="IconName.Battery" Color="IconColor.Muted" /></h1></div>
+		<div class="symbol"><h1><Icon Name="IconName.BrightnessHigh" Color="IconColor.Muted" /></h1></div>
+		<div class="symbol"><h1><Icon Name="IconName.ExclamationTriangle" Color="IconColor.Muted" /></h1></div>
+		<div class="symbol"><h1><Icon Name="IconName.Gear" Color="IconColor.Muted" /></h1></div>
+		<div class="symbol"><h1><Icon Name="IconName.ThermometerHigh" Color="IconColor.Muted" /></h1></div>
+	</div>
+</div>
 
 @code {
+	CancellationTokenSource CancellationSource = new();
 
-    private int datasetsCount;
-    private int labelsCount;
+	// Not called On page change, but called when the component is no longer needed
+	public void Dispose()
+	{
+		CancellationSource.Cancel();
+		backgroundData.OnChange -= StateHasChanged;
 
-    public int timerCount = 0;
+		NavigationManager.LocationChanged -= OnLocationChanged;
 
-    private bool blinkerValLeft = false;
-    private bool blinkerValRight = false;
+		CancellationSource.Dispose();
+	}
+	protected override async void OnInitialized()
+	{
+		backgroundData.OnChange += StateHasChanged;
+		await backgroundData.StartAsync(CancellationSource.Token);
 
-    private async void OnTimerElapsed(object sender, int count)
-    {
-        timerCount = count;
+		NavigationManager.LocationChanged += OnLocationChanged;
+	}
 
-        //Sinals
-        if (timerCount % 25 == 0)
-        {
-            //Left siganl
-            if (header.BlinkerToggleLeft)
-            {
-                blinkerValLeft = !blinkerValLeft;
-            }
-            //Right signal
-            if (header.BlinkerToggleRight)
-            {
-                blinkerValRight = !blinkerValRight;
-            }
-        }
-        if(timerCount % 10 == 0)
-        {
-            ws.Critical = await Http.GetFromJsonAsync<WaveSculptor.WaveSculptorCritical>("/api/WaveSculptorCritical") ?? throw new Exception("Null Value Received for ws.Critical");
-            header = await Http.GetFromJsonAsync<Header>("/api/Header") ?? throw new Exception("Null Value Received for header");
-            emu.Critical = await Http.GetFromJsonAsync<EMU.EMUCritical>("/api/EMUCritical") ?? throw new Exception("Null Value Received for emu.Critical");
-            //amt = await Http.GetFromJsonAsync<Encoder>("/api/Encoder") ?? throw new Exception("Null Value Received for amt");
-
-            //Sends the data to the backend for front end control. This will not be used for deployment.
-            await Http.PostAsJsonAsync("/api/Encoder", amt.Percentage);
-        }
-        StateHasChanged(); // Update the UI
-    }
-
-    // Not called On page change, but called when the component is no longer needed
-    public void Dispose()
-    {
-        NavigationManager.LocationChanged -= OnLocationChanged;
-        TimerService.OnTimerElapsed -= OnTimerElapsed;
-        TimerService.Dispose();
-    }
-    protected override void OnInitialized()
-    {
-        TimerService.OnTimerElapsed += OnTimerElapsed;
-        NavigationManager.LocationChanged += OnLocationChanged;
-    }
-
-    async void OnLocationChanged(object sender, LocationChangedEventArgs args)
-    {
-        TimerService.OnTimerElapsed -= OnTimerElapsed;
-        NavigationManager.LocationChanged -= OnLocationChanged;
-        string navigationMethod = args.IsNavigationIntercepted ? "HTML" : "code";
-    }
+	protected void OnLocationChanged(object sender, LocationChangedEventArgs args)
+	{
+		NavigationManager.LocationChanged -= OnLocationChanged;
+		string navigationMethod = args.IsNavigationIntercepted ? "HTML" : "code";
+	}
 }

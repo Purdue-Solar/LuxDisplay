@@ -1,4 +1,4 @@
-﻿using Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
+﻿using Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast;
 using Microsoft.Extensions.Hosting;
 using SocketCANSharp;
 using System;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using WavesculptorStatus = Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast.Status;
+using WaveSculptorStatus = Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast.Status;
 using SteeringStatus = Lux.DriverInterface.Shared.CanPackets.Steering.Status;
 using Lux.DriverInterface.Shared;
 
@@ -36,7 +36,7 @@ public class PacketGeneratorService(IPacketQueue queue) : BackgroundService
 	{
 		if (state is not Random rand)
 			return;
-		WavesculptorStatus wsStatus = new WavesculptorStatus((WavesculptorStatus.LimitFlags)rand.Next(), (WavesculptorStatus.ErrorFlags)rand.Next(), 0, 0, 0);
+		WaveSculptorStatus wsStatus = new WaveSculptorStatus((WaveSculptorStatus.LimitFlags)rand.Next(), (WaveSculptorStatus.ErrorFlags)rand.Next(), 0, 0, 0);
 		Queue.Enqueue(wsStatus.ToCanFrame());
 	}
 

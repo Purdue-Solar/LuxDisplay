@@ -1,0 +1,49 @@
+﻿@using BlazorBootstrap
+@using Lux.DriverInterface.Shared
+
+@inject WaveSculptor ws
+@inject Blinkers blinkers
+@inject SteeringWheel steering
+@inject BackgroundDataService backgroundData
+
+<div class="header-flex">
+    <div class="header-item">
+        <h1 style="font-size:70px"><Icon Name="IconName.ArrowLeftCircleFill" Color="blinkers.LeftColor" /></h1>
+    </div>
+    @if(DisplayVelocities)
+    {
+        <div class="header-item">
+            <h1>@((int)(ws.VehicleVelocity * Conversions.MpsToMph))</h1> <h4>MPH</h4>
+        </div>
+    }
+    <div class="header=item">
+        <h1 style="font-size:50px"><Icon Name="PushToTalkIcon" Color="IconColor.Muted" /></h1>
+    </div>
+    @if (DisplayVelocities)
+    {
+        <div class="header-item">
+            <h1>@((int)(ws.MotorVelocity))</h1> <h4>RPM</h4>
+	    </div>   
+    }
+    <div class="header-item">
+        <h1 style="font-size:70px"><Icon Name="IconName.ArrowRightCircleFill" Color="blinkers.RightColor" /></h1>
+	</div>
+</div>
+
+@code {
+    [Parameter]
+    public bool DisplayVelocities { get; set; } = true;
+
+    public IconName PushToTalkIcon => steering.PushToTalkActive ? IconName.VolumeMute : IconName.VolumeUpFill;
+
+    protected override void OnInitialized()
+    {
+        backgroundData.OnChange += StateHasChanged;
+        base.OnInitialized();
+    }
+
+    public void Dispose()
+	{
+		backgroundData.OnChange -= StateHasChanged;
+	}
+}

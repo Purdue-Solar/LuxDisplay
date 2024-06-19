@@ -7,10 +7,10 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Broadcast;
+namespace Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast;
 public struct Identification(uint tritiumId, uint serialNumber) : IReadableCanPacket<Identification>
 {
-    public static uint CanId => WavesculptorBase.BroadcastBaseId + (uint)BroadcastId.Identification;
+    public static uint CanId => WaveSculptorBase.BroadcastBaseId + (uint)BroadcastId.Identification;
     public readonly uint Id => CanId;
     public static bool IsExtended => false;
     public static int Size => 8;

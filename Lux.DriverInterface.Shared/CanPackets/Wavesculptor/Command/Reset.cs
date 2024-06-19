@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Command;
+namespace Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Command;
 public readonly struct Reset : IWriteableCanPacket<Reset>
 {
-	public static uint CanId => WavesculptorBase.CommandBaseId + (uint)CommandId.Reset;
+	public static uint CanId => WaveSculptorBase.CommandBaseId + (uint)CommandId.Reset;
 	public uint Id => CanId;
 	public static bool IsExtended => false;
 	public static int Size => 8;

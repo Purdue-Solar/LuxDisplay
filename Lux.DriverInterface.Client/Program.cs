@@ -10,13 +10,18 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddBlazorBootstrap();
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+builder.Services.AddSingleton(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddSingleton<Header>();
 builder.Services.AddSingleton<TimerService>();
-builder.Services.AddSingleton<EMU>();
+//builder.Services.AddSingleton<EMU>();
 builder.Services.AddSingleton<WaveSculptor>();
 builder.Services.AddSingleton<Telemetry>();
 builder.Services.AddSingleton<Encoder>();
-builder.Services.AddSingleton<Peripheral>(); //Not needed after the steering wheel gets implemented
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+builder.Services.AddSingleton<MpptCollection>();
+builder.Services.AddSingleton<PeripheralCollection>();
+builder.Services.AddSingleton<SteeringWheel>();
+builder.Services.AddSingleton<Blinkers>();
+builder.Services.AddSingleton<BackgroundDataService>();
 
 await builder.Build().RunAsync();

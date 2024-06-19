@@ -13,7 +13,7 @@ using Microsoft.Extensions.Configuration;
 using System.Numerics;
 using Encoder = Lux.DriverInterface.Shared.Encoder;
 using System.Device.Gpio;
-using Lux.DriverInterface.Shared.CanPackets.Wavesculptor.Command;
+using Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Command;
 
 namespace Lux.DataRadio;
 
