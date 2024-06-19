@@ -64,11 +64,13 @@ public class RadioService(IConfiguration config, ILogger<RadioService> logger) :
 
 	private bool TryOpenSerial()
 	{
-		if (SerialPort is not null)
+		if (SerialPort is not null && SerialPort.IsOpen)
             return true;
 
 		try
 		{
+			SerialPort?.Dispose();
+
 			SerialPort = new SerialPort(Device, BaudRate, Parity, DataBits, StopBits);
 			SerialPort.Open();
 			
@@ -84,7 +86,7 @@ public class RadioService(IConfiguration config, ILogger<RadioService> logger) :
 
 	public void Write(CanFrame canFrame)
 	{
-		if (!IsInitialized || SerialPort is null)
+		if (!IsInitialized)
 			throw new InvalidOperationException("RadioService is not initialized");
 
 		byte[] buffer = CanPool.Rent(SerialPacket.Size);
@@ -100,19 +102,21 @@ public class RadioService(IConfiguration config, ILogger<RadioService> logger) :
 		
 		packet.TryWrite(buffer);
 
-		SerialPort?.BaseStream.Write(buffer.AsSpan(0, SerialPacket.Size));
+		if (SerialPort is not null && SerialPort.IsOpen)
+			SerialPort.BaseStream.Write(buffer.AsSpan(0, SerialPacket.Size));
 		_fileBuffer.Enqueue(buffer);
 
 		if (++PacketCount == SyncRate)
 		{
-			if (SerialPort is null)
+			if (SerialPort is null || !SerialPort.IsOpen)
 				TryOpenSerial();
 
 			Span<byte> syncBuffer = stackalloc byte[SerialPacket.Size];
 			PacketCount = 0;
 			
 			SerialPacket.SyncPacket.TryWrite(syncBuffer);
-			SerialPort?.BaseStream.Write(syncBuffer);
+			if (SerialPort is not null && SerialPort.IsOpen)
+				SerialPort.BaseStream.Write(syncBuffer);
         }
 	}
 
