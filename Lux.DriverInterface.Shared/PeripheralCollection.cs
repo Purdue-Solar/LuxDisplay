@@ -9,6 +9,7 @@ namespace Lux.DriverInterface.Shared;
 public class PeripheralCollection
 {
 	public Peripheral[] Peripherals { get; } = new Peripheral[CanPackets.Peripherals.PeripheralBase.MaxPeripheralCount];
+	public int Count => Peripherals.Length;
 
 	public PeripheralCollection()
 	{

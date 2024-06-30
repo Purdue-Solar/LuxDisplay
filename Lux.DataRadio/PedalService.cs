@@ -34,24 +34,24 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 	private double ReverseMultiplier { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(ReverseMultiplier)}", 1.0);
 
 	private GpioPin ForwardPin { get; } = new GpioPin(
-        wrapper,
+		wrapper,
 		config.GetValue($"{nameof(PedalService)}:{nameof(ForwardPin)}:{nameof(GpioPin.PinNumber)}", 5),
 		config.GetValue($"{nameof(PedalService)}:{nameof(ForwardPin)}:{nameof(GpioPin.PinMode)}", PinMode.InputPullUp),
 		config.GetValue($"{nameof(PedalService)}:{nameof(ForwardPin)}:{nameof(GpioPin.InvertActive)}", true));
 	private GpioPin ReversePin { get; } = new GpioPin(
-        wrapper,
+		wrapper,
 		config.GetValue($"{nameof(PedalService)}:{nameof(ReversePin)}:{nameof(GpioPin.PinNumber)}", 5),
 		config.GetValue($"{nameof(PedalService)}:{nameof(ReversePin)}:{nameof(GpioPin.PinMode)}", PinMode.InputPullUp),
 		config.GetValue($"{nameof(PedalService)}:{nameof(ReversePin)}:{nameof(GpioPin.InvertActive)}", true));
 
 	private GpioPin RegenEnablePin { get; } = new GpioPin(
-        wrapper,
+		wrapper,
 		config.GetValue($"{nameof(PedalService)}:{nameof(RegenEnablePin)}:{nameof(GpioPin.PinNumber)}", 7),
 		config.GetValue($"{nameof(PedalService)}:{nameof(RegenEnablePin)}:{nameof(GpioPin.PinMode)}", PinMode.InputPullUp),
 		config.GetValue($"{nameof(PedalService)}:{nameof(RegenEnablePin)}:{nameof(GpioPin.InvertActive)}", true));
 
 	private GpioPin RegenLedPin { get; } = new GpioPin(
-        wrapper,
+		wrapper,
 		config.GetValue($"{nameof(PedalService)}:{nameof(RegenLedPin)}:{nameof(GpioPin.PinNumber)}", 26),
 		config.GetValue($"{nameof(PedalService)}:{nameof(RegenLedPin)}:{nameof(GpioPin.PinMode)}", PinMode.Output),
 		config.GetValue($"{nameof(PedalService)}:{nameof(RegenLedPin)}:{nameof(GpioPin.InvertActive)}", false));
@@ -128,31 +128,31 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 		Amt.Percentage = (float)percent;
 		Amt.Value = value;
 
-        // Reverse pedal
-        if (pedalState == PedalState.Reverse)
+		// Reverse pedal
+		if (pedalState == PedalState.Reverse)
 			percent *= -ReverseMultiplier;
 
 		ControlMode mode = UpdateControlMode();
 
 		Drive drive = mode == ControlMode.Speed ? GetSpeedControl(percent) : GetTorqueControl(percent);
 		CanSend.SendPacket(drive);
-    }
+	}
 
-    private Drive GetSpeedControl(double percent)
-    {
+	private Drive GetSpeedControl(double percent)
+	{
 		float rpm = (float)(percent * MaxSpeed);
 		float current = 1;
-        return new Drive(rpm, current);
-    }
-
-    private Drive GetTorqueControl(double percent)
-    {
-		float rpm = percent >= 0 ? (float)HighRpm : (float)LowRpm;
-        float current = (float)percent;
 		return new Drive(rpm, current);
 	}
 
-    private PedalState GetPedalState()
+	private Drive GetTorqueControl(double percent)
+	{
+		float rpm = percent >= 0 ? (float)HighRpm : (float)LowRpm;
+		float current = (float)percent;
+		return new Drive(rpm, current);
+	}
+
+	private PedalState GetPedalState()
 	{
 		bool forwardPressed = ForwardPin.Read();
 		bool reversePresesd = ReversePin.Read();
@@ -171,8 +171,8 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 		bool regenEnable = RegenEnablePin.Read();
 		RegenLedPin.Write(regenEnable);
 
-        return regenEnable ? ControlMode.Speed : ControlMode.Torque;
-    }
+		return regenEnable ? ControlMode.Speed : ControlMode.Torque;
+	}
 
 	private static bool ValidateChecksum(ushort rawValue, out ushort value)
 	{

@@ -69,10 +69,10 @@ public readonly struct Status(uint id, Status.ButtonFlags buttons, byte page, by
 
 		BinaryPrimitives.WriteUInt16LittleEndian(buffer, (ushort)Buttons);
 		buffer[sizeof(ushort)] = Page;
-        buffer[sizeof(ushort) + 1] = Reserved;
+		buffer[sizeof(ushort) + 1] = Reserved;
 		BinaryPrimitives.WriteSingleLittleEndian(buffer.Slice(4), TargetSpeed);
 
-        written = Size;
+		written = Size;
 		return true;
 	}
 

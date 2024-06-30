@@ -94,6 +94,9 @@ namespace Lux.DataRadio
 			{
 				byte id = (byte)(status.CanId.Source - CanIds.PeripheralsBase);
 
+				if (id >= Peripherals.Count)
+					return;
+
 				Peripherals[id].Outputs = status.Outputs;
 			});
 		}
@@ -102,36 +105,54 @@ namespace Lux.DataRadio
 		{
 			Decoder.AddPacketDecoder((InputMeasurements input) =>
 			{
+				if (input.DeviceId >= Mppts.Count)
+					return;
+
 				Mppts[input.DeviceId].InputVoltage = input.InputVoltage;
 				Mppts[input.DeviceId].InputCurrent = input.InputCurrent;
 			});
 
 			Decoder.AddPacketDecoder((OutputMeasurements output) =>
 			{
+				if (output.DeviceId >= Mppts.Count)
+					return;
+
 				Mppts[output.DeviceId].OutputVoltage = output.OutputVoltage;
 				Mppts[output.DeviceId].OutputCurrent = output.OutputCurrent;
 			});
 
 			Decoder.AddPacketDecoder((Temperature temp) =>
 			{
+				if (temp.DeviceId >= Mppts.Count)
+					return;
+
 				Mppts[temp.DeviceId].MosfetTemperature = temp.MosfetTemperature;
 				Mppts[temp.DeviceId].ControllerTemperature = temp.ControllerTemperature;
 			});
 
 			Decoder.AddPacketDecoder((AuxiliaryPowerSupply aux) =>
 			{
+				if (aux.DeviceId >= Mppts.Count)
+					return;
+
 				Mppts[aux.DeviceId].Voltage12V = aux.Voltage12V;
 				Mppts[aux.DeviceId].Voltage3V = aux.Voltage3V;
 			});
 
 			Decoder.AddPacketDecoder((Limits limits) =>
 			{
+				if (limits.DeviceId >= Mppts.Count)
+					return;
+
 				Mppts[limits.DeviceId].MaxOutputVoltage = limits.MaxOutputVoltage;
 				Mppts[limits.DeviceId].MaxInputCurrent = limits.MaxInputCurrent;
 			});
 
 			Decoder.AddPacketDecoder((MpptStatus status) =>
 			{
+				if (status.DeviceId >= Mppts.Count)
+					return;
+
 				Mppts[status.DeviceId].RxErrorCount = status.RxErrorCount;
 				Mppts[status.DeviceId].TxErrorCount = status.TxErrorCount;
 				Mppts[status.DeviceId].TxOverflowCount = status.TxOverflowCount;
@@ -143,6 +164,9 @@ namespace Lux.DataRadio
 
 			Decoder.AddPacketDecoder((PowerConnector connector) =>
 			{
+				if (connector.DeviceId >= Mppts.Count)
+					return;
+
 				Mppts[connector.DeviceId].PowerConnectorVoltage = connector.OutputVoltage;
 				Mppts[connector.DeviceId].PowerConnectorTemp = connector.ConnectorTemperature;
 			});

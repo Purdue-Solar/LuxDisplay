@@ -27,10 +27,10 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 		_ = Task.Run(() => RetrieveWaveSculptorDataAsync(cancellation), cancellation);
 		await Task.Delay(50, cancellation);
 		_ = Task.Run(() => RetrieveSteeringWheelDataAsync(cancellation), cancellation);
-        await Task.Delay(50, cancellation);
-        _ = Task.Run(() => RetrieveMpptCollectionDataAsync(cancellation), cancellation);
-        await Task.Delay(50, cancellation);
-        _ = Task.Run(() => RetrieveEncoderDataAsync(cancellation), cancellation);
+		await Task.Delay(50, cancellation);
+		_ = Task.Run(() => RetrieveMpptCollectionDataAsync(cancellation), cancellation);
+		await Task.Delay(50, cancellation);
+		_ = Task.Run(() => RetrieveEncoderDataAsync(cancellation), cancellation);
 	}
 
 	const double WaveSculptorPeriod = 250;
@@ -41,36 +41,44 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 
 		while (!token.IsCancellationRequested)
 		{
-			WaveSculptor? response = await Http.GetFromJsonAsync<WaveSculptor>("api/WaveSculptor", token);
-			if (response is null)
-				return;
+			try
+			{
+				WaveSculptor? response = await Http.GetFromJsonAsync<WaveSculptor>("api/WaveSculptor", token);
+				if (response is null)
+					return;
 
-			WaveSculptor.ErrorFlags = response.ErrorFlags;
-			WaveSculptor.LimitFlags = response.LimitFlags;
-			WaveSculptor.BusCurrent = response.BusCurrent;
-			WaveSculptor.BusVoltage = response.BusVoltage;
-			WaveSculptor.VehicleVelocity = response.VehicleVelocity;
-			WaveSculptor.MotorVelocity = response.MotorVelocity;
-			WaveSculptor.PhaseCCurrent = response.PhaseCCurrent;
-			WaveSculptor.PhaseBCurrent = response.PhaseBCurrent;
-			WaveSculptor.Vd = response.Vd;
-			WaveSculptor.Vq = response.Vq;
-			WaveSculptor.CurrentD = response.CurrentD;
-			WaveSculptor.CurrentQ = response.CurrentQ;
-			WaveSculptor.BemfD = response.BemfD;
-			WaveSculptor.BemfQ = response.BemfQ;
-			WaveSculptor.Voltage15 = response.Voltage15;
-			WaveSculptor.Voltage1V9 = response.Voltage1V9;
-			WaveSculptor.Voltage3V3 = response.Voltage3V3;
-			WaveSculptor.HeatsinkTemp = response.HeatsinkTemp;
-			WaveSculptor.MotorTemp = response.MotorTemp;
-			WaveSculptor.DspBoardTemp = response.DspBoardTemp;
-			WaveSculptor.DcBusAmpHrs = response.DcBusAmpHrs;
-			WaveSculptor.Odometer = response.Odometer;
-			WaveSculptor.SlipSpeed = response.SlipSpeed;
+				WaveSculptor.ErrorFlags = response.ErrorFlags;
+				WaveSculptor.LimitFlags = response.LimitFlags;
+				WaveSculptor.BusCurrent = response.BusCurrent;
+				WaveSculptor.BusVoltage = response.BusVoltage;
+				WaveSculptor.VehicleVelocity = response.VehicleVelocity;
+				WaveSculptor.MotorVelocity = response.MotorVelocity;
+				WaveSculptor.PhaseCCurrent = response.PhaseCCurrent;
+				WaveSculptor.PhaseBCurrent = response.PhaseBCurrent;
+				WaveSculptor.Vd = response.Vd;
+				WaveSculptor.Vq = response.Vq;
+				WaveSculptor.CurrentD = response.CurrentD;
+				WaveSculptor.CurrentQ = response.CurrentQ;
+				WaveSculptor.BemfD = response.BemfD;
+				WaveSculptor.BemfQ = response.BemfQ;
+				WaveSculptor.Voltage15 = response.Voltage15;
+				WaveSculptor.Voltage1V9 = response.Voltage1V9;
+				WaveSculptor.Voltage3V3 = response.Voltage3V3;
+				WaveSculptor.HeatsinkTemp = response.HeatsinkTemp;
+				WaveSculptor.MotorTemp = response.MotorTemp;
+				WaveSculptor.DspBoardTemp = response.DspBoardTemp;
+				WaveSculptor.DcBusAmpHrs = response.DcBusAmpHrs;
+				WaveSculptor.Odometer = response.Odometer;
+				WaveSculptor.SlipSpeed = response.SlipSpeed;
 
-			OnChange?.Invoke();
+				OnChange?.Invoke();
 
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "Error retrieving WaveSculptor data");
+			}
+			
 			await timer.WaitForNextTickAsync(token);
 		}
 
@@ -81,29 +89,37 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 	private const double SteeringWheelPeriod = 250;
 	private async Task RetrieveSteeringWheelDataAsync(CancellationToken token)
 	{
-        var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(SteeringWheelPeriod));
-        _timers.Add(timer);
+		var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(SteeringWheelPeriod));
+		_timers.Add(timer);
 
 		while (!token.IsCancellationRequested)
 		{
-			SteeringWheel? response = await Http.GetFromJsonAsync<SteeringWheel>("api/SteeringWheel", token);
-			if (response is null)
-				return;
+			try
+			{
+				SteeringWheel? response = await Http.GetFromJsonAsync<SteeringWheel>("api/SteeringWheel", token);
+				if (response is null)
+					return;
 
-			SteeringWheel.PushToTalkActive = response.PushToTalkActive;
-			SteeringWheel.HeadlightsActive = response.HeadlightsActive;
-			SteeringWheel.RightTurnActive = response.RightTurnActive;
-			SteeringWheel.HazardsActive = response.HazardsActive;
-			SteeringWheel.LeftTurnActive = response.LeftTurnActive;
-			SteeringWheel.CruiseActive = response.CruiseActive;
-			SteeringWheel.CruiseUpActive = response.CruiseUpActive;
-			SteeringWheel.CruiseDownActive = response.CruiseDownActive;
-			SteeringWheel.HornActive = response.HornActive;
-			SteeringWheel.Page = response.Page;
-			SteeringWheel.TargetSpeed = response.TargetSpeed;
+				SteeringWheel.PushToTalkActive = response.PushToTalkActive;
+				SteeringWheel.HeadlightsActive = response.HeadlightsActive;
+				SteeringWheel.RightTurnActive = response.RightTurnActive;
+				SteeringWheel.HazardsActive = response.HazardsActive;
+				SteeringWheel.LeftTurnActive = response.LeftTurnActive;
+				SteeringWheel.CruiseActive = response.CruiseActive;
+				SteeringWheel.CruiseUpActive = response.CruiseUpActive;
+				SteeringWheel.CruiseDownActive = response.CruiseDownActive;
+				SteeringWheel.HornActive = response.HornActive;
+				SteeringWheel.Page = response.Page;
+				SteeringWheel.TargetSpeed = response.TargetSpeed;
 
-			OnChange?.Invoke();
+				OnChange?.Invoke();
 
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "Error retrieving Steering Wheel data");
+			}
+			
 			await timer.WaitForNextTickAsync(token);
 		}
 
@@ -114,45 +130,53 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 	private const double MpptCollectionPeriod = 1000;
 	private async Task RetrieveMpptCollectionDataAsync(CancellationToken token)
 	{
-        var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(MpptCollectionPeriod));
-        _timers.Add(timer);
+		var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(MpptCollectionPeriod));
+		_timers.Add(timer);
 
 		while (!token.IsCancellationRequested)
 		{
-        MpptCollection? response = await Http.GetFromJsonAsync<MpptCollection>("api/Mppts", token);
-		if (response is null)
-			return;
+			try
+			{
+				MpptCollection? response = await Http.GetFromJsonAsync<MpptCollection>("api/Mppts", token);
+				if (response is null)
+					return;
 
-		for (int i = 0; i < Math.Min(response.Mppts.Length, MpptCollection.Mppts.Length); i++)
-		{
-			Mppt mpptResponse = response.Mppts[i];
-			Mppt mppt = MpptCollection.Mppts[i];
+				for (int i = 0; i < Math.Min(response.Mppts.Length, MpptCollection.Mppts.Length); i++)
+				{
+					Mppt mpptResponse = response.Mppts[i];
+					Mppt mppt = MpptCollection.Mppts[i];
 
-			mppt.InputVoltage = mpptResponse.InputVoltage;
-			mppt.InputCurrent = mpptResponse.InputCurrent;
-			mppt.OutputVoltage = mpptResponse.OutputVoltage;
-			mppt.OutputCurrent = mpptResponse.OutputCurrent;
-			mppt.MosfetTemperature = mpptResponse.MosfetTemperature;
-			mppt.ControllerTemperature = mpptResponse.ControllerTemperature;
-			mppt.Voltage12V = mpptResponse.Voltage12V;
-			mppt.Voltage3V = mpptResponse.Voltage3V;
-			mppt.MaxOutputVoltage = mpptResponse.MaxOutputVoltage;
-			mppt.MaxInputCurrent = mpptResponse.MaxInputCurrent;
-			mppt.RxErrorCount = mpptResponse.RxErrorCount;
-			mppt.TxErrorCount = mpptResponse.TxErrorCount;
-			mppt.TxOverflowCount = mpptResponse.TxOverflowCount;
-			mppt.ErrorFlags = mpptResponse.ErrorFlags;
-			mppt.LimitFlags = mpptResponse.LimitFlags;
-			mppt.Mode = mpptResponse.Mode;
-			mppt.TestCounter = mpptResponse.TestCounter;
-			mppt.PowerConnectorVoltage = mpptResponse.PowerConnectorVoltage;
-			mppt.PowerConnectorTemp = mpptResponse.PowerConnectorTemp;
-		}
+					mppt.InputVoltage = mpptResponse.InputVoltage;
+					mppt.InputCurrent = mpptResponse.InputCurrent;
+					mppt.OutputVoltage = mpptResponse.OutputVoltage;
+					mppt.OutputCurrent = mpptResponse.OutputCurrent;
+					mppt.MosfetTemperature = mpptResponse.MosfetTemperature;
+					mppt.ControllerTemperature = mpptResponse.ControllerTemperature;
+					mppt.Voltage12V = mpptResponse.Voltage12V;
+					mppt.Voltage3V = mpptResponse.Voltage3V;
+					mppt.MaxOutputVoltage = mpptResponse.MaxOutputVoltage;
+					mppt.MaxInputCurrent = mpptResponse.MaxInputCurrent;
+					mppt.RxErrorCount = mpptResponse.RxErrorCount;
+					mppt.TxErrorCount = mpptResponse.TxErrorCount;
+					mppt.TxOverflowCount = mpptResponse.TxOverflowCount;
+					mppt.ErrorFlags = mpptResponse.ErrorFlags;
+					mppt.LimitFlags = mpptResponse.LimitFlags;
+					mppt.Mode = mpptResponse.Mode;
+					mppt.TestCounter = mpptResponse.TestCounter;
+					mppt.PowerConnectorVoltage = mpptResponse.PowerConnectorVoltage;
+					mppt.PowerConnectorTemp = mpptResponse.PowerConnectorTemp;
+				}
 
-			OnChange?.Invoke();
+				OnChange?.Invoke();
 
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "Error retrieving MPPT data");
+			}
+			
 			await timer.WaitForNextTickAsync(token);
-        }
+		}
 
 		_timers.Remove(timer);
 		timer.Dispose();
@@ -161,19 +185,26 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 	private const double EncoderPeriod = 500;
 	private async Task RetrieveEncoderDataAsync(CancellationToken token)
 	{
-        var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(EncoderPeriod));
-        _timers.Add(timer);
+		var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(EncoderPeriod));
+		_timers.Add(timer);
 
 		while (!token.IsCancellationRequested)
 		{
-			Encoder? response = await Http.GetFromJsonAsync<Encoder>("api/Encoder", token);
-			if (response is null)
-				return;
+			try
+			{
+				Encoder? response = await Http.GetFromJsonAsync<Encoder>("api/Encoder", token);
+				if (response is null)
+					return;
 
-			Encoder.Percentage = response.Percentage;
-			Encoder.Value = response.Value;
+				Encoder.Percentage = response.Percentage;
+				Encoder.Value = response.Value;
 
-			OnChange?.Invoke();
+				OnChange?.Invoke();
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "Error retrieving Encoder data");
+			}
 
 			await timer.WaitForNextTickAsync(token);
 		}

@@ -18,6 +18,7 @@ builder.Services.AddSingleton<CanDecoder>();
 
 //builder.Services.AddHostedService<TestingDataIncrementService>();
 
+builder.Services.AddSingleton<IPacketQueue, PacketQueue>();
 builder.Services.AddSingleton<RadioService>();
 
 if (Environment.OSVersion.Platform == PlatformID.Unix)
@@ -26,8 +27,7 @@ if (Environment.OSVersion.Platform == PlatformID.Unix)
 }
 else
 {
-    builder.Services.AddSingleton<IPacketQueue, PacketQueue>();
-    builder.Services.AddHostedService<PacketGeneratorService>();
+	builder.Services.AddHostedService<PacketGeneratorService>();
 	builder.Services.AddSingleton<ICanServiceBase, DummyCanServiceBase>();
 }
 
@@ -40,19 +40,19 @@ builder.Services.AddHostedService<PedalService>();
 builder.Services.AddBlazorBootstrap(); // Add this line
 builder.Services.AddRazorPages();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.NumberHandling |= System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals);
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseWebAssemblyDebugging();
+	app.UseWebAssemblyDebugging();
 }
 else
 {
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+	app.UseExceptionHandler("/Error");
+	// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+	app.UseHsts();
 }
 
 app.UseHttpsRedirection();

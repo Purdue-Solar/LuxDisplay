@@ -27,10 +27,12 @@ public interface ICanServiceBase
 	public int Write(CanFrame frame);
 }
 
-public class UnixCanServiceBase(IConfiguration config, RadioService radio) : ICanServiceBase, IDisposable
+public class UnixCanServiceBase(IConfiguration config, ILogger<UnixCanServiceBase> logger, RadioService radio, IPacketQueue packetQueue) : ICanServiceBase, IDisposable
 {
 	protected RawCanSocket RawCan { get; } = new RawCanSocket();
+	protected ILogger Logger { get; } = logger;
 	protected RadioService Radio { get; } = radio;
+	protected IPacketQueue PacketQueue { get; } = packetQueue;
 	protected string CanInterfaceName { get; } = config.GetValue("CanService:Interface", "can0") ?? "can0";
 
 	public bool IsInitialized { get; private set; } = false;
@@ -60,7 +62,10 @@ public class UnixCanServiceBase(IConfiguration config, RadioService radio) : ICa
 
 		int read = RawCan.Read(out CanFrame frame);
 
-		_ = Task.Run(() => Radio.Write(frame));
+		if (read != 0)
+			_ = Task.Run(() => Radio.Write(frame));
+		else if (PacketQueue.TryDequeue(out frame))
+			read = frame.Length;
 
 		canFrame = frame;
 		return read;
@@ -75,7 +80,15 @@ public class UnixCanServiceBase(IConfiguration config, RadioService radio) : ICa
 
 		_ = Task.Run(() => Radio.Write(frame));
 
-		return RawCan.Write(frame);
+		try
+		{
+			return RawCan.Write(frame);
+		}
+		catch (Exception e)
+		{
+			Logger.LogError(e, "Failed to write to {interface}: {frame}", CanInterfaceName, frame);
+			return 0;
+		}
 	}
 
 	public virtual void Dispose()

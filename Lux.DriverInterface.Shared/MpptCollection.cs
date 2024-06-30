@@ -9,6 +9,7 @@ namespace Lux.DriverInterface.Shared;
 public class MpptCollection
 {
 	public Mppt[] Mppts { get; } = new Mppt[CanPackets.Elmar.ElmarBase.MaxMpptCount];
+	public int Count => Mppts.Length;
 
 	public MpptCollection()
 	{

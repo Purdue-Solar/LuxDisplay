@@ -19,6 +19,25 @@ public interface IPacketQueue
 	bool TryDequeue(out CanFrame frame);
 }
 
+public static class PacketQueueExtensions
+{
+	public static void Enqueue(this IPacketQueue queue, IEnumerable<CanFrame> frames)
+	{
+		foreach(var frame in frames)
+		{
+			queue.Enqueue(frame);
+		}
+	}
+
+	public static void Enqueue(this IPacketQueue queue, ReadOnlySpan<CanFrame> frames)
+	{
+		foreach(var frame in frames)
+		{
+			queue.Enqueue(frame);
+		}
+	}
+}
+
 public class PacketQueue : IPacketQueue
 {
 	protected ConcurrentQueue<CanFrame> Frames { get; } = new();
@@ -78,6 +97,24 @@ public class PacketGeneratorService(IPacketQueue queue) : BackgroundService
 
 		using Timer steering = new Timer(GenerateSteeringPacket, new Random(), TimeSpan.FromMilliseconds(10), TimeSpan.FromMilliseconds(100));
 		
+		using Timer trashStandard = new Timer(obj => {
+			if (obj is not Random rand)
+				return;
+			byte[] bytes = new byte[8];
+			uint id = (uint)rand.Next(0, 0x7FF);
+			rand.NextBytes(bytes);
+			Queue.Enqueue(new CanFrame(id, bytes));
+		}, new Random(), TimeSpan.Zero, TimeSpan.FromMilliseconds(1));
+	   
+		using Timer trashExtended = new Timer(obj => {
+			if (obj is not Random rand)
+				return;
+			byte[] bytes = new byte[8];
+			uint id = (uint)rand.Next(0, 0x1FFFFFFF) | 0x80000000;
+			rand.NextBytes(bytes);
+			Queue.Enqueue(new CanFrame(id, bytes));
+		}, new Random(), TimeSpan.Zero, TimeSpan.FromMilliseconds(1));
+
 		await Task.Delay(-1, stoppingToken);
 	}
 }
@@ -92,5 +129,12 @@ internal static class RandExtensions
 	public static float NextFloat(this Random rand, float min, float max)
 	{
 		return (float)(rand.NextDouble() * (max - min) + min);
+	}
+
+	public static uint NextUInt32(this Random rand)
+	{
+		Span<byte> buffer = stackalloc byte[4];
+		rand.NextBytes(buffer);
+		return BitConverter.ToUInt32(buffer);
 	}
 }
