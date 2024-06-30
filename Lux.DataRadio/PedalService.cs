@@ -89,12 +89,20 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 		// Try to read the value until the checksum is correct
 		ushort rawValue = BinaryPrimitives.ReadUInt16BigEndian(readBuffer);
 		ushort value;
-		while (!ValidateChecksum(rawValue, out value))
+
+		const int maxTries = 10;
+		int tries = 0;
+		while (!ValidateChecksum(rawValue, out value) && tries < maxTries)
 		{
 			Thread.Sleep(20);
 			Spi.TransferFullDuplex(writeBuffer, readBuffer);
 			rawValue = BinaryPrimitives.ReadUInt16BigEndian(readBuffer);
+
+			tries++;
 		}
+
+		if (tries == maxTries)
+			return;
 
 		// Maps the difference correctly to the range of the encoder
 		int diff = value - _zeroValue;
@@ -220,8 +228,8 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 			tries++;
 		}
 
-		if (tries == maxTries)
-			throw new InvalidOperationException("Failed to get zero point");
+		//if (tries == maxTries)
+		//	throw new InvalidOperationException("Failed to get zero point");
 
 		_zeroValue = value;
 	}
