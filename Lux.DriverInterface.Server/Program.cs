@@ -6,6 +6,11 @@ using System.Device.Gpio;
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://*:61248", "https://*:61249");
 builder.WebHost.UseSetting("http_port", "61248");
+if (builder.Environment.IsProduction())
+{
+	builder.WebHost.UseContentRoot("/app");
+	builder.WebHost.UseWebRoot("/app/wwwroot");
+}
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<WaveSculptor>();
