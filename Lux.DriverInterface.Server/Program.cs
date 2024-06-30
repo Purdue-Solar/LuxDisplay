@@ -3,14 +3,14 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Lux.DriverInterface.Shared;
 using System.Device.Gpio;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+	Args = args,
+	ContentRootPath = Environment.OSVersion.Platform == PlatformID.Unix ? "/app" : Directory.GetCurrentDirectory(),
+	WebRootPath = Environment.OSVersion.Platform == PlatformID.Unix ? "/app/wwwroot" : "wwwroot"
+});
 builder.WebHost.UseUrls("http://*:61248", "https://*:61249");
 builder.WebHost.UseSetting("http_port", "61248");
-if (builder.Environment.IsProduction())
-{
-	//builder.WebHost.UseContentRoot("/app");
-	builder.WebHost.UseWebRoot("/app/wwwroot");
-}
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<WaveSculptor>();
