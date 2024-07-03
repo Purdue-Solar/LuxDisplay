@@ -78,6 +78,7 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 			return;
 
 		PedalState pedalState = GetPedalState();
+		pedalState = PedalState.Forward; // Force forward for testing
 		if (pedalState == PedalState.Neutral)   // Neutral ignores the pedal position and doesn't send any commands
 			return;
 
