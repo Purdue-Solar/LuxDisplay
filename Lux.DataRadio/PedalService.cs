@@ -234,10 +234,10 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 		_zeroValue = value;
 	}
 
-	protected override Task ExecuteAsync(CancellationToken stoppingToken)
+	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		if (Environment.OSVersion.Platform != PlatformID.Unix)
-			return Task.CompletedTask;
+			return;
 
 		//Set zero position for encoder
 		SpiConnectionSettings settings = new SpiConnectionSettings(1, 0);
@@ -249,8 +249,7 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 
 		using Timer timer = new Timer(HandlePedal, null, TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(50));
 
-		Task.Delay(-1, stoppingToken).GetAwaiter().GetResult();
-		return Task.CompletedTask;
+		await Task.Delay(-1, stoppingToken);
 	}
 
 	public override void Dispose()
