@@ -4,6 +4,7 @@
 @inject WaveSculptor ws
 @inject Blinkers blinkers
 @inject SteeringWheel steering
+@inject Encoder encoder
 @inject BackgroundDataService backgroundData
 
 <div class="header-flex">
@@ -16,8 +17,11 @@
             <h1 class="@(steering.CruiseActive ? "cruise-active" : string.Empty)">@((int)(ws.VehicleVelocity * Conversions.MpsToMph))</h1> <h4>mph</h4>
         </div>
     }
-    <div class="header=item">
+    <div class="header-item">
         <h1 style="font-size:50px"><Icon Name="PushToTalkIcon" Color="IconColor.Muted" /></h1>
+    </div>
+    <div class="header-item">
+        <h1 style="font-size:50px;font-weight:bold">@PedalState</h1>
     </div>
     @if (DisplayVelocities)
     {
@@ -35,6 +39,19 @@
     public bool DisplayVelocities { get; set; } = true;
 
     public IconName PushToTalkIcon => steering.PushToTalkActive ? IconName.VolumeMute : IconName.VolumeUpFill;
+
+    public char PedalState
+    {
+        get
+        {
+            return encoder.State switch
+            {
+                Encoder.PedalState.Forward => 'F',
+                Encoder.PedalState.Reverse => 'R',
+                _ => 'N'
+            };
+        }
+    }
 
     protected override void OnInitialized()
     {

@@ -198,6 +198,8 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 
 				Encoder.Percentage = response.Percentage;
 				Encoder.Value = response.Value;
+				Encoder.State = response.State;
+				Encoder.Mode = response.Mode;
 
 				OnChange?.Invoke();
 			}

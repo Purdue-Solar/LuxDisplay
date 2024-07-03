@@ -77,10 +77,12 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 		if (SteeringWheel.CruiseActive)
 			return;
 
-		PedalState pedalState = GetPedalState();
-		pedalState = PedalState.Forward; // Force forward for testing
-		if (pedalState == PedalState.Neutral)   // Neutral ignores the pedal position and doesn't send any commands
+		Encoder.PedalState pedalState = GetPedalState();
+		pedalState = Encoder.PedalState.Forward; // Force forward for testing
+		if (pedalState == Encoder.PedalState.Neutral)   // Neutral ignores the pedal position and doesn't send any commands
 			return;
+
+		Amt.State = pedalState;
 
 		Span<byte> writeBuffer = [0x00, 0x00];
 		Span<byte> readBuffer = stackalloc byte[2];
@@ -138,12 +140,13 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 		Amt.Value = value;
 
 		// Reverse pedal
-		if (pedalState == PedalState.Reverse)
+		if (pedalState == Encoder.PedalState.Reverse)
 			percent *= -ReverseMultiplier;
 
-		ControlMode mode = UpdateControlMode();
+		Encoder.ControlMode mode = UpdateControlMode();
+		Amt.Mode = mode;
 
-		Drive drive = mode == ControlMode.Speed ? GetSpeedControl(percent) : GetTorqueControl(percent);
+		Drive drive = mode == Encoder.ControlMode.Speed ? GetSpeedControl(percent) : GetTorqueControl(percent);
 		CanSend.SendPacket(drive);
 	}
 
@@ -161,26 +164,26 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 		return new Drive(rpm, current);
 	}
 
-	private PedalState GetPedalState()
+	private Encoder.PedalState GetPedalState()
 	{
 		bool forwardPressed = ForwardPin.Read();
 		bool reversePresesd = ReversePin.Read();
 
 		return (forwardPressed, reversePresesd) switch
 		{
-			(false, false) => PedalState.Neutral,
-			(true, false) => PedalState.Forward,
-			(false, true) => PedalState.Reverse,
-			(true, true) => PedalState.Neutral
+			(false, false) => Encoder.PedalState.Neutral,
+			(true, false) => Encoder.PedalState.Forward,
+			(false, true) => Encoder.PedalState.Reverse,
+			(true, true) => Encoder.PedalState.Neutral
 		};
 	}
 
-	private ControlMode UpdateControlMode()
+	private Encoder.ControlMode UpdateControlMode()
 	{
 		bool regenEnable = RegenEnablePin.Read();
 		RegenLedPin.Write(regenEnable);
 
-		return regenEnable ? ControlMode.Speed : ControlMode.Torque;
+		return regenEnable ? Encoder.ControlMode.Speed : Encoder.ControlMode.Torque;
 	}
 
 	private static bool ValidateChecksum(ushort rawValue, out ushort value)
@@ -261,18 +264,5 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 
 		base.Dispose();
 		GC.SuppressFinalize(this);
-	}
-
-	private enum PedalState
-	{
-		Neutral,
-		Forward,
-		Reverse
-	}
-
-	private enum ControlMode
-	{
-		Torque,
-		Speed
 	}
 }
