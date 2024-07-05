@@ -78,11 +78,11 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 			return;
 
 		Encoder.PedalState pedalState = GetPedalState();
+		Amt.State = pedalState;
 		//pedalState = Encoder.PedalState.Forward; // Force forward for testing
 		if (pedalState == Encoder.PedalState.Neutral)   // Neutral ignores the pedal position and doesn't send any commands
 			return;
 
-		Amt.State = pedalState;
 
 		Span<byte> writeBuffer = [0x00, 0x00];
 		Span<byte> readBuffer = stackalloc byte[2];
