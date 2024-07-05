@@ -36,25 +36,25 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 	private GpioPin ForwardPin { get; } = new GpioPin(
 		wrapper,
 		config.GetValue($"{nameof(PedalService)}:{nameof(ForwardPin)}:{nameof(GpioPin.PinNumber)}", 5),
-		config.GetValue($"{nameof(PedalService)}:{nameof(ForwardPin)}:{nameof(GpioPin.PinMode)}", PinMode.InputPullUp),
+		PinMode.InputPullUp,
 		config.GetValue($"{nameof(PedalService)}:{nameof(ForwardPin)}:{nameof(GpioPin.InvertActive)}", true));
 	private GpioPin ReversePin { get; } = new GpioPin(
 		wrapper,
 		config.GetValue($"{nameof(PedalService)}:{nameof(ReversePin)}:{nameof(GpioPin.PinNumber)}", 5),
-		config.GetValue($"{nameof(PedalService)}:{nameof(ReversePin)}:{nameof(GpioPin.PinMode)}", PinMode.InputPullUp),
+		PinMode.InputPullUp,
 		config.GetValue($"{nameof(PedalService)}:{nameof(ReversePin)}:{nameof(GpioPin.InvertActive)}", true));
 
-	private GpioPin RegenEnablePin { get; } = new GpioPin(
-		wrapper,
-		config.GetValue($"{nameof(PedalService)}:{nameof(RegenEnablePin)}:{nameof(GpioPin.PinNumber)}", 7),
-		config.GetValue($"{nameof(PedalService)}:{nameof(RegenEnablePin)}:{nameof(GpioPin.PinMode)}", PinMode.InputPullUp),
-		config.GetValue($"{nameof(PedalService)}:{nameof(RegenEnablePin)}:{nameof(GpioPin.InvertActive)}", true));
+	//private GpioPin RegenEnablePin { get; } = new GpioPin(
+	//	wrapper,
+	//	config.GetValue($"{nameof(PedalService)}:{nameof(RegenEnablePin)}:{nameof(GpioPin.PinNumber)}", 7),
+	//	PinMode.InputPullUp,
+	//	config.GetValue($"{nameof(PedalService)}:{nameof(RegenEnablePin)}:{nameof(GpioPin.InvertActive)}", true));
 
-	private GpioPin RegenLedPin { get; } = new GpioPin(
-		wrapper,
-		config.GetValue($"{nameof(PedalService)}:{nameof(RegenLedPin)}:{nameof(GpioPin.PinNumber)}", 26),
-		config.GetValue($"{nameof(PedalService)}:{nameof(RegenLedPin)}:{nameof(GpioPin.PinMode)}", PinMode.Output),
-		config.GetValue($"{nameof(PedalService)}:{nameof(RegenLedPin)}:{nameof(GpioPin.InvertActive)}", false));
+	//private GpioPin RegenLedPin { get; } = new GpioPin(
+	//	wrapper,
+	//	config.GetValue($"{nameof(PedalService)}:{nameof(RegenLedPin)}:{nameof(GpioPin.PinNumber)}", 26),
+	//	config.GetValue($"{nameof(PedalService)}:{nameof(RegenLedPin)}:{nameof(GpioPin.PinMode)}", PinMode.Output),
+	//	config.GetValue($"{nameof(PedalService)}:{nameof(RegenLedPin)}:{nameof(GpioPin.InvertActive)}", false));
 
 	private const int EncoderBits = 14;
 	private const ushort Range = 1 << EncoderBits;
@@ -180,10 +180,12 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 
 	private Encoder.ControlMode UpdateControlMode()
 	{
-		bool regenEnable = RegenEnablePin.Read();
-		RegenLedPin.Write(regenEnable);
+		return Encoder.ControlMode.Speed;
 
-		return regenEnable ? Encoder.ControlMode.Speed : Encoder.ControlMode.Torque;
+		//bool regenEnable = RegenEnablePin.Read();
+		//RegenLedPin.Write(regenEnable);
+
+		//return regenEnable ? Encoder.ControlMode.Speed : Encoder.ControlMode.Torque;
 	}
 
 	private static bool ValidateChecksum(ushort rawValue, out ushort value)
