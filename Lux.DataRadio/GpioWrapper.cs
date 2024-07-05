@@ -16,7 +16,7 @@ public class GpioWrapper
     public GpioWrapper()
     {
         if (IsOSEnabled)
-            GpioController = new GpioController(PinNumberingScheme.Board);
+            GpioController = new GpioController();
     }
 
     public GpioWrapper(GpioController controller)
