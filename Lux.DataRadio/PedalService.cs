@@ -35,13 +35,13 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 
 	private GpioPin ForwardPin { get; } = new GpioPin(
 		wrapper,
-		config.GetValue($"{nameof(PedalService)}:{nameof(ForwardPin)}:{nameof(GpioPin.PinNumber)}", 5),
-		PinMode.InputPullUp,
+		config.GetValue($"{nameof(PedalService)}:{nameof(ForwardPin)}:{nameof(GpioPin.PinNumber)}", 6),
+		config.GetValue($"{nameof(PedalService)}:{nameof(ForwardPin)}:{nameof(GpioPin.PinMode)}", PinMode.InputPullUp),
 		config.GetValue($"{nameof(PedalService)}:{nameof(ForwardPin)}:{nameof(GpioPin.InvertActive)}", true));
 	private GpioPin ReversePin { get; } = new GpioPin(
 		wrapper,
 		config.GetValue($"{nameof(PedalService)}:{nameof(ReversePin)}:{nameof(GpioPin.PinNumber)}", 5),
-		PinMode.InputPullUp,
+        config.GetValue($"{nameof(PedalService)}:{nameof(ReversePin)}:{nameof(GpioPin.PinMode)}", PinMode.InputPullUp),
 		config.GetValue($"{nameof(PedalService)}:{nameof(ReversePin)}:{nameof(GpioPin.InvertActive)}", true));
 
 	//private GpioPin RegenEnablePin { get; } = new GpioPin(
@@ -78,7 +78,7 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 			return;
 
 		Encoder.PedalState pedalState = GetPedalState();
-		pedalState = Encoder.PedalState.Forward; // Force forward for testing
+		//pedalState = Encoder.PedalState.Forward; // Force forward for testing
 		if (pedalState == Encoder.PedalState.Neutral)   // Neutral ignores the pedal position and doesn't send any commands
 			return;
 
@@ -169,6 +169,7 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 		bool forwardPressed = ForwardPin.Read();
 		bool reversePresesd = ReversePin.Read();
 
+		
 		return (forwardPressed, reversePresesd) switch
 		{
 			(false, false) => Encoder.PedalState.Neutral,
