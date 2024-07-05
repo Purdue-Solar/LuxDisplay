@@ -25,7 +25,7 @@ public record GpioPin : IDisposable
 
         if (GpioWrapper.IsOSEnabled)
         {
-            wrapper.GpioController!.OpenPin(pinNumber, mode);
+            Pin = wrapper.GpioController!.OpenPin(pinNumber, mode);
 
             if (PinMode == PinMode.Output)
                 Pin?.Write(InvertActive ? PinValue.High : PinValue.Low);
