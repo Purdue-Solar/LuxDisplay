@@ -22,6 +22,7 @@ using WaveSculptorStatus = Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Br
 using PeripheralsStatus = Lux.DriverInterface.Shared.CanPackets.Peripherals.Status;
 using MpptStatus = Lux.DriverInterface.Shared.CanPackets.Elmar.Broadcast.Status;
 using SteeringStatus = Lux.DriverInterface.Shared.CanPackets.Steering.Status;
+using Lux.DriverInterface.Shared.CanPackets.Display;
 
 namespace Lux.DataRadio
 {
@@ -190,6 +191,9 @@ namespace Lux.DataRadio
 			{
 				WaveSculptor.VehicleVelocity = velocity.VehicleVelocity;
 				WaveSculptor.MotorVelocity = velocity.MotorVelocity;
+
+				RelayedVelocity relay = new RelayedVelocity((uint)RelayedVelocity.DefaultId, velocity.VehicleVelocity);
+				ServiceBase.Write(relay.ToCanFrame());
 			});
 
 			Decoder.AddPacketDecoder((PhaseCurrent current) =>

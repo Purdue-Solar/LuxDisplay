@@ -10,7 +10,7 @@ namespace Lux.DataRadio;
 public class GpioWrapper
 {
 	// TODO: correct privileges for GPIO on Raspberry Pi
-	public static bool IsOSEnabled => false && Environment.OSVersion.Platform == PlatformID.Unix;
+	public static bool IsOSEnabled => Environment.OSVersion.Platform == PlatformID.Unix;
     public GpioController? GpioController { get; }
 
     public GpioWrapper()
