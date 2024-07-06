@@ -10,7 +10,7 @@ public class Blinkers : IDisposable
 
     protected SteeringWheel SteeringWheel { get; }
 
-    private const double _blinkRate = 1000.0 / 3;
+    private const double _blinkRate = 500.0;
     private bool _blinker = false;
     private readonly Timer _timer;
 

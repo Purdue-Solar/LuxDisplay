@@ -15,11 +15,12 @@ public static class CanIds
 	public const byte DistributionBase = (byte)DeviceType.Distribution << 4;
 	public const byte PeripheralsBase = (byte)DeviceType.Peripherals << 4;
 	public const byte SteeringBase = (byte)DeviceType.Steering << 4;
+    public const byte TelemetryBase = (byte)DeviceType.Telemetry << 4;
 
-	/// <summary>
-	/// 5 bit Device Type
-	/// </summary>
-	public enum DeviceType : byte
+    /// <summary>
+    /// 5 bit Device Type
+    /// </summary>
+    public enum DeviceType : byte
 	{
 		Mppt = 0x0,
 		Bms = 0x1,
@@ -28,6 +29,7 @@ public static class CanIds
 		Distribution = 0x4,
 		Peripherals = 0x5,
 		Steering = 0x6,
+		Telemetry = 0x7,
 
 		Generic = 0x1F
 	}

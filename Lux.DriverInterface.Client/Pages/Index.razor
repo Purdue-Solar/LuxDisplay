@@ -44,6 +44,17 @@
 		<div class="symbol"><h1><Icon Name="IconName.ThermometerHigh" Color="IconColor.Muted" /></h1></div>
 	</div>
 </div>
+<div class="bottom-info">
+	<div class="bottom-info-item">
+		Motor Errors: @ws.ErrorFlags
+	</div>
+	<div class="bottom-info-item">
+		Motor Limits: @ws.LimitFlags
+	</div>
+	<div class="bottom-info-item">
+		Bus Voltage: @(ws.BusVoltage.ToString("N1"))V
+	</div>
+</div>
 
 @code {
 	CancellationTokenSource CancellationSource = new();

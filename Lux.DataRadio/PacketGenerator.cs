@@ -55,7 +55,7 @@ public class PacketGeneratorService(IPacketQueue queue) : BackgroundService
 	{
 		if (state is not Random rand)
 			return;
-		WaveSculptorStatus wsStatus = new WaveSculptorStatus((WaveSculptorStatus.LimitFlags)rand.Next(), (WaveSculptorStatus.ErrorFlags)rand.Next(), 0, 0, 0);
+		WaveSculptorStatus wsStatus = new WaveSculptorStatus((WaveSculptorStatus.LimitFlags)(rand.Next() & ((1 << 6) - 1)), (WaveSculptorStatus.ErrorFlags)(rand.Next() & ((1 << 9) - 1)), 0, 0, 0);
 		Queue.Enqueue(wsStatus.ToCanFrame());
 	}
 
