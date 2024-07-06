@@ -231,20 +231,30 @@ public class RadioService(IConfiguration config, ILogger<RadioService> logger, I
 			if (!OutputEnabled)
 				return;
 
+			CancellationTokenSource cancelSource = new CancellationTokenSource();
+			cancelSource.CancelAfter(100);
 			if (OutputPort is not null && OutputPort.IsOpen)
-				OutputPort.BaseStream.Write(buffer.AsSpan(0, SerialPacket.Size));
+				_ = OutputPort.BaseStream.WriteAsync(buffer.AsMemory(0, SerialPacket.Size), cancelSource.Token);
 
 			if (++PacketCount == SyncRate)
 			{
 				if (OutputPort is null || !OutputPort.IsOpen)
 					TryOpenSerialPorts();
 
-				Span<byte> syncBuffer = stackalloc byte[SerialPacket.Size];
+				byte[] syncBuffer = CanPool.Rent(SerialPacket.Size);
 				PacketCount = 0;
+
+				if (!cancelSource.TryReset())
+				{
+					cancelSource = new CancellationTokenSource();
+					cancelSource.CancelAfter(100);
+				}
 
 				SerialPacket.SyncPacket.TryWrite(syncBuffer);
 				if (OutputPort is not null && OutputPort.IsOpen)
-					OutputPort.BaseStream.Write(syncBuffer);
+					_ = OutputPort.BaseStream.WriteAsync(syncBuffer, cancelSource.Token);
+
+				CanPool.Return(syncBuffer);
 			}
 		}
 		catch (Exception ex)
