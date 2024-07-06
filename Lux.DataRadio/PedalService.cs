@@ -31,6 +31,9 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 	private double Deadzone { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(Deadzone)}", 2.5);
 	private double FullAngle { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(FullAngle)}", 20.0);
 	private double MaxSpeed { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(MaxSpeed)}", 60.0);
+	private double WheelDiamater { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(WheelDiamater)}", 0.5);
+	private double WheelCircumference => Math.PI * WheelDiamater;
+	private double MaxRpm => MaxSpeed * Conversions.MphToMps / WheelCircumference * 60;
 	private double ReverseMultiplier { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(ReverseMultiplier)}", 1.0);
 
 	private GpioPin ForwardPin { get; } = new GpioPin(
@@ -152,7 +155,7 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 
 	private Drive GetSpeedControl(double percent)
 	{
-		float rpm = (float)(percent * MaxSpeed);
+		float rpm = (float)(percent * MaxRpm);
 		float current = 1;
 		return new Drive(rpm, current);
 	}
