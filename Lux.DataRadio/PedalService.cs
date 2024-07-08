@@ -148,7 +148,7 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 		if (pedalState == Encoder.PedalState.Reverse)
 			percent *= -ReverseMultiplier;
 
-		Encoder.ControlMode mode = ControlMode; //UpdateControlMode();
+		Encoder.ControlMode mode = UpdateControlMode();
 		Amt.Mode = mode;
 
 		Drive drive = mode == Encoder.ControlMode.Speed ? GetSpeedControl(percent) : GetTorqueControl(percent);
@@ -173,7 +173,6 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 	{
 		bool forwardPressed = ForwardPin.Read();
 		bool reversePresesd = ReversePin.Read();
-
 		
 		return (forwardPressed, reversePresesd) switch
 		{
