@@ -36,6 +36,8 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 	private double MaxRpm => MaxSpeed * Conversions.MphToMps / WheelCircumference * 60;
 	private double ReverseMultiplier { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(ReverseMultiplier)}", 1.0);
 
+	private Encoder.ControlMode ControlMode { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(ControlMode)}", Encoder.ControlMode.Speed);
+
 	private GpioPin ForwardPin { get; } = new GpioPin(
 		wrapper,
 		config.GetValue($"{nameof(PedalService)}:{nameof(ForwardPin)}:{nameof(GpioPin.PinNumber)}", 6),
@@ -57,7 +59,7 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 	//	wrapper,
 	//	config.GetValue($"{nameof(PedalService)}:{nameof(RegenLedPin)}:{nameof(GpioPin.PinNumber)}", 26),
 	//	config.GetValue($"{nameof(PedalService)}:{nameof(RegenLedPin)}:{nameof(GpioPin.PinMode)}", PinMode.Output),
-	//	config.GetValue($"{nameof(PedalService)}:{nameof(RegenLedPin)}:{nameof(GpioPin.InvertActive)}", false));
+	//	config.GetValue($"{nameof(PedalService)}:{nameof(RegenLedPin)}:{nameof(GpioPin.InvertActive)}", false)); 
 
 	private const int EncoderBits = 14;
 	private const ushort Range = 1 << EncoderBits;
@@ -146,7 +148,7 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 		if (pedalState == Encoder.PedalState.Reverse)
 			percent *= -ReverseMultiplier;
 
-		Encoder.ControlMode mode = UpdateControlMode();
+		Encoder.ControlMode mode = ControlMode; //UpdateControlMode();
 		Amt.Mode = mode;
 
 		Drive drive = mode == Encoder.ControlMode.Speed ? GetSpeedControl(percent) : GetTorqueControl(percent);

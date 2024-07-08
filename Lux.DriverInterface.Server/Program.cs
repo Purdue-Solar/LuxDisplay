@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 	ContentRootPath = Environment.OSVersion.Platform == PlatformID.Unix ? "/app" : Directory.GetCurrentDirectory(),
 	WebRootPath = Environment.OSVersion.Platform == PlatformID.Unix ? "/app/wwwroot" : "wwwroot"
 });
-builder.WebHost.UseUrls("http://*:61248", "https://*:61249");
+builder.WebHost.UseUrls("http://*:61248");
 builder.WebHost.UseSetting("http_port", "61248");
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -61,7 +61,7 @@ else
 	app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
