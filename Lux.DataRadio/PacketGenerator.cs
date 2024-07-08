@@ -10,7 +10,10 @@ using System.Threading.Tasks;
 
 using WaveSculptorStatus = Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast.Status;
 using SteeringStatus = Lux.DriverInterface.Shared.CanPackets.Steering.Status;
+using DistributionStatus = Lux.DriverInterface.Shared.CanPackets.Distribution.Status;
 using Lux.DriverInterface.Shared;
+using System.Runtime.InteropServices.ObjectiveC;
+using Lux.DriverInterface.Shared.CanPackets.Distribution;
 
 namespace Lux.DataRadio;
 public interface IPacketQueue
@@ -23,7 +26,7 @@ public static class PacketQueueExtensions
 {
 	public static void Enqueue(this IPacketQueue queue, IEnumerable<CanFrame> frames)
 	{
-		foreach(var frame in frames)
+		foreach (var frame in frames)
 		{
 			queue.Enqueue(frame);
 		}
@@ -31,7 +34,7 @@ public static class PacketQueueExtensions
 
 	public static void Enqueue(this IPacketQueue queue, ReadOnlySpan<CanFrame> frames)
 	{
-		foreach(var frame in frames)
+		foreach (var frame in frames)
 		{
 			queue.Enqueue(frame);
 		}
@@ -89,6 +92,64 @@ public class PacketGeneratorService(IPacketQueue queue) : BackgroundService
 		Queue.Enqueue(packet.ToCanFrame());
 	}
 
+	private void GenerateDistributionStatus(object? state)
+	{
+		if (state is not Random rand)
+			return;
+
+		PsrCanId id = new PsrCanId(PsrCanId.MulticastDestination, CanIds.DistributionBase, (byte)DriverInterface.Shared.CanPackets.Distribution.MessageId.Status, CanIds.DeviceType.Distribution, CanIds.MessagePriority.Normal);
+		DistributionStatus packet = new DistributionStatus(id.ToInteger(), DistributionStatus.StatusFlags.Mask & (DistributionStatus.StatusFlags)rand.Next());
+		Queue.Enqueue(packet.ToCanFrame());
+	}
+
+	private void GenerateDistributionBusVoltages(object? state)
+	{
+		if (state is not Random rand)
+			return;
+
+		const float busVoltageScale = 0.003125f;
+		const float minVoltage = 11.5f;
+		const float maxVoltage = 14.1f;
+
+		short mainVoltage = (short)(rand.NextFloat(minVoltage, maxVoltage) / busVoltageScale);
+		short auxVoltage = (short)(rand.NextFloat(minVoltage, maxVoltage) / busVoltageScale);
+		PsrCanId id = new PsrCanId(PsrCanId.MulticastDestination, CanIds.DistributionBase, (byte)DriverInterface.Shared.CanPackets.Distribution.MessageId.BusVoltages, CanIds.DeviceType.Distribution, CanIds.MessagePriority.Normal);
+		BusVoltages packet = new BusVoltages(id.ToInteger(), mainVoltage, auxVoltage, busVoltageScale);
+		Queue.Enqueue(packet.ToCanFrame());
+	}
+
+	private void GenerateDistributionCurrents(object? state)
+	{
+		if (state is not Random rand)
+			return;
+
+		const float currentScale = 9.765625E-4f;
+		const float minCurrent = 1;
+		const float maxCurrent = 15;
+
+		short mainCurrent = (short)(rand.NextFloat(minCurrent, maxCurrent) / currentScale);
+		short auxCurrent = (short)(rand.NextFloat(minCurrent, maxCurrent) / currentScale);
+		PsrCanId id = new PsrCanId(PsrCanId.MulticastDestination, CanIds.DistributionBase, (byte)DriverInterface.Shared.CanPackets.Distribution.MessageId.Currents, CanIds.DeviceType.Distribution, CanIds.MessagePriority.Normal);
+		Currents packet = new Currents(id.ToInteger(), mainCurrent, auxCurrent, currentScale);
+		Queue.Enqueue(packet.ToCanFrame());
+	}
+
+	private void GenerateDistributionPowers(object? state)
+	{
+		if (state is not Random rand)
+			return;
+
+		const float powerScale = 0.05f;
+		const float minPower = 10;
+		const float maxPower = 100;
+
+		ushort mainPower = (ushort)(rand.NextFloat(minPower, maxPower) / powerScale);
+		ushort auxPower = (ushort)(rand.NextFloat(minPower, maxPower) / powerScale);
+		PsrCanId id = new PsrCanId(PsrCanId.MulticastDestination, CanIds.DistributionBase, (byte)DriverInterface.Shared.CanPackets.Distribution.MessageId.Powers, CanIds.DeviceType.Distribution, CanIds.MessagePriority.Normal);
+		Powers powers = new Powers(id.ToInteger(), auxPower, mainPower, powerScale);
+		Queue.Enqueue(powers.ToCanFrame());
+	}
+
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		using Timer wsStatusTimer = new Timer(GenerateWSStatusPacket, new Random(), TimeSpan.Zero, TimeSpan.FromMilliseconds(200));
@@ -96,8 +157,14 @@ public class PacketGeneratorService(IPacketQueue queue) : BackgroundService
 		using Timer wsVelocity = new Timer(GenerateWSVelocity, new Random(), TimeSpan.FromMilliseconds(4), TimeSpan.FromMilliseconds(200));
 
 		using Timer steering = new Timer(GenerateSteeringPacket, new Random(), TimeSpan.FromMilliseconds(10), TimeSpan.FromMilliseconds(100));
-		
-		using Timer trashStandard = new Timer(obj => {
+
+		using Timer distributionStatus = new Timer(GenerateDistributionStatus, new Random(), TimeSpan.FromMilliseconds(20), TimeSpan.FromMilliseconds(100));
+		using Timer distributionBusVoltages = new Timer(GenerateDistributionBusVoltages, new Random(), TimeSpan.FromMilliseconds(30), TimeSpan.FromMilliseconds(100));
+		using Timer distributionCurrents = new Timer(GenerateDistributionCurrents, new Random(), TimeSpan.FromMilliseconds(40), TimeSpan.FromMilliseconds(100));
+		using Timer distributionPowers = new Timer(GenerateDistributionPowers, new Random(), TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100));
+
+		using Timer trashStandard = new Timer(obj =>
+		{
 			if (obj is not Random rand)
 				return;
 			byte[] bytes = new byte[8];
@@ -105,8 +172,9 @@ public class PacketGeneratorService(IPacketQueue queue) : BackgroundService
 			rand.NextBytes(bytes);
 			Queue.Enqueue(new CanFrame(id, bytes));
 		}, new Random(), TimeSpan.Zero, TimeSpan.FromMilliseconds(1));
-	   
-		using Timer trashExtended = new Timer(obj => {
+
+		using Timer trashExtended = new Timer(obj =>
+		{
 			if (obj is not Random rand)
 				return;
 			byte[] bytes = new byte[8];

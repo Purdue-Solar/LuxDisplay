@@ -23,8 +23,8 @@ public readonly struct RelayedVelocity(uint id, float velocity) : IWriteableCanP
 	public float Velocity { get; } = velocity;
 	public float Reserved => 0;
 
-	private static uint IdMask = (PsrCanId.DeviceTypeMask | PsrCanId.MessageIdMask).ToInteger();
-	private static uint IdEq = PsrCanId.ToInteger(0, 0, (byte)MessageId.RelayedVelocity, CanIds.DeviceType.Display, 0x00);
+	private static readonly uint IdMask = (PsrCanId.DeviceTypeMask | PsrCanId.MessageIdMask).ToInteger();
+	private static readonly uint IdEq = PsrCanId.ToInteger(0, 0, (byte)MessageId.RelayedVelocity, CanIds.DeviceType.Display, 0x00);
 
 	public static PsrCanId DefaultId => new PsrCanId(0xff, CanIds.DisplayBase, (byte)MessageId.RelayedVelocity, CanIds.DeviceType.Display, CanIds.MessagePriority.High);
 

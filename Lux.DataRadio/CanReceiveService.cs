@@ -22,17 +22,21 @@ using WaveSculptorStatus = Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Br
 using PeripheralsStatus = Lux.DriverInterface.Shared.CanPackets.Peripherals.Status;
 using MpptStatus = Lux.DriverInterface.Shared.CanPackets.Elmar.Broadcast.Status;
 using SteeringStatus = Lux.DriverInterface.Shared.CanPackets.Steering.Status;
+using DistributionStatus = Lux.DriverInterface.Shared.CanPackets.Distribution.Status;
+using DistributionMessageId = Lux.DriverInterface.Shared.CanPackets.Distribution.MessageId;
 using Lux.DriverInterface.Shared.CanPackets.Display;
+using Lux.DriverInterface.Shared.CanPackets.Distribution;
 
 namespace Lux.DataRadio
 {
-	public class CanReceiveService(ICanServiceBase serviceBase, WaveSculptor wsc, MpptCollection mppts, PeripheralCollection peripherals, SteeringWheel steering, Telemetry telemetry, CanDecoder decoder) : BackgroundService
+	public class CanReceiveService(ICanServiceBase serviceBase, WaveSculptor wsc, MpptCollection mppts, PeripheralCollection peripherals, SteeringWheel steering, Distribution distribution, Telemetry telemetry, CanDecoder decoder) : BackgroundService
 	{
 		protected ICanServiceBase ServiceBase { get; } = serviceBase;
 		protected WaveSculptor WaveSculptor { get; } = wsc;
 		protected MpptCollection Mppts { get; } = mppts;
 		protected PeripheralCollection Peripherals { get; } = peripherals;
 		protected SteeringWheel SteeringWheel { get; } = steering;
+		protected Distribution Distribution { get; } = distribution;
 		protected Telemetry Telemetry { get; } = telemetry;
 
 		protected CanDecoder Decoder { get; } = decoder;
@@ -43,6 +47,7 @@ namespace Lux.DataRadio
 			AddMpptDecoders();
 			AddPeripheralDecoders();
 			AddSteeringWheelDecoders();
+			AddDistributionDecoders();
 		}
 
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -243,6 +248,51 @@ namespace Lux.DataRadio
 			});
 
 			Decoder.AddPacketDecoder((SlipSpeed slip) => WaveSculptor.SlipSpeed = slip.SlipSpeedHz);
+		}
+
+		private void AddDistributionDecoders()
+		{
+			Decoder.AddPacketDecoder((DistributionStatus status) => Distribution.Flags = status.Flags);
+
+			Decoder.AddPacketDecoder((BusVoltages voltages) =>
+			{
+				Distribution.RawMainVoltage = voltages.MainVoltage;
+				Distribution.RawAuxVoltage = voltages.AuxVoltage;
+				Distribution.VoltageScaleFactor = voltages.Scale;
+			});
+
+			Decoder.AddPacketDecoder((Currents currents) =>
+			{
+				Distribution.RawMainCurrent = currents.MainCurrent;
+				Distribution.RawAuxCurrent = currents.AuxCurrent;
+				Distribution.CurrentScaleFactor = currents.Scale;
+			});
+
+			Decoder.AddPacketDecoder((Temperatures temps) =>
+			{
+				Distribution.RawMainTemperature = temps.MainTemperature;
+				Distribution.RawAuxTemperature = temps.AuxTemperature;
+				Distribution.TemperatureScaleFactor = temps.Scale;
+			});
+
+			Decoder.AddPacketDecoder((Powers powers) =>
+			{
+				Distribution.RawMainPower = powers.MainPower;
+				Distribution.RawAuxPower = powers.AuxPower;
+				Distribution.PowerScaleFactor = powers.Scale;
+			});
+
+			Decoder.AddPacketDecoder((Energy energy) =>
+			{
+				DistributionMessageId message = (DistributionMessageId)energy.CanId.MessageId;
+				
+				Distribution.EnergyScaleFactor = energy.Scale;
+				if (message == DistributionMessageId.MainEnergy)
+					Distribution.RawMainEnergy = energy.EnergyValue;
+				else if (message == DistributionMessageId.AuxEnergy)
+					Distribution.RawAuxEnergy = energy.EnergyValue;
+			});
+
 		}
 
 		public override void Dispose()

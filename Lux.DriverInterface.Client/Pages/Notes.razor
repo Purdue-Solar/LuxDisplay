@@ -1,6 +1,6 @@
 ﻿@page "/Notes"
-@inject TimerService TimerService;
 @inject NavigationManager NavigationManager;
+@inject BackgroundDataService backgroundData;
 @using BlazorBootstrap;
 @using Lux.DriverInterface.Shared;
 
@@ -31,32 +31,26 @@ Regular Note Size<br>
 
 @code
 {
-    public int timerCount = 0;
-
-    private bool blinkerValLeft = false;
-    private bool blinkerValRight = false;
-
-    private void OnTimerElapsed(object sender, int count)
-    {
-        timerCount = count;
-        StateHasChanged(); // Update the UI
-    }
+    protected CancellationTokenSource CancellationSource = new();
 
     // Don't forget to unsubscribe from the event when the component is disposed.
     public void Dispose()
     {
-        TimerService.OnTimerElapsed -= OnTimerElapsed;
-        TimerService.Dispose();
+        CancellationSource.Cancel();
+        backgroundData.OnChange -= StateHasChanged;
+
+        CancellationSource.Dispose();
     }
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
-        TimerService.OnTimerElapsed += OnTimerElapsed;
+        backgroundData.OnChange += StateHasChanged;
+        await backgroundData.StartAsync(CancellationSource.Token);
+
         NavigationManager.LocationChanged += OnLocationChanged;
     }
 
-    async void OnLocationChanged(object sender, LocationChangedEventArgs args)
+    protected void OnLocationChanged(object sender, LocationChangedEventArgs args)
     {
-        TimerService.OnTimerElapsed -= OnTimerElapsed;
         NavigationManager.LocationChanged -= OnLocationChanged;
         string navigationMethod = args.IsNavigationIntercepted ? "HTML" : "code";
     }

@@ -2,53 +2,19 @@
 @using BlazorBootstrap;
 @using Lux.DriverInterface.Shared;
 @using static Lux.DriverInterface.Shared.Shared;
-@inject TimerService TimerService;
 @inject Encoder amt
 @inject WaveSculptor ws
 @inject BackgroundDataService backgroundData
 @inject NavigationManager NavigationManager
 @inject HttpClient http
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Testing</PageTitle>
 <Header />
 
-@(amt.Value & 0x3FFF)
-@(amt.Percentage)
-<div class="container">
-	<div class="additional-speedometers">
-		<div class="speedometer">
-			<div class="value">60</div>
-			<div class="label">mph</div>
-		</div>
-		<div class="speedometer">
-			<div class="value">30</div>
-			<div class="label">kW</div>
-		</div>
-	</div>
-</div>
-
-<input @bind="amt.Percentage" type="range" min="0" max="1" step="0.01">
-@(amt.Percentage)
-
-@code {
-
-	private int datasetsCount;
-	private int labelsCount;
-
-	public int timerCount = 0;
+@code
+{
 
 	protected CancellationTokenSource CancellationSource { get; } = new();
-
-	private async void OnTimerElapsed(object sender, int count)
-	{
-		timerCount = count;
-
-		//Sinals
-		if (timerCount % 20 == 0)
-		{
-			await http.PostAsJsonAsync("/api/Encoder", amt.Percentage);
-		}
-	}
 
 	// Not called On page change, but called when the component is no longer needed
 	public void Dispose()
@@ -57,9 +23,6 @@
 		backgroundData.OnChange -= StateHasChanged;
 
 		NavigationManager.LocationChanged -= OnLocationChanged;
-		TimerService.OnTimerElapsed -= OnTimerElapsed;
-		TimerService.Dispose();
-
 		CancellationSource.Dispose();
 	}
 	protected override async void OnInitialized()
@@ -67,13 +30,11 @@
 		backgroundData.OnChange += StateHasChanged;
 		await backgroundData.StartAsync(CancellationSource.Token);
 
-		TimerService.OnTimerElapsed += OnTimerElapsed;
 		NavigationManager.LocationChanged += OnLocationChanged;
 	}
 
 	protected void OnLocationChanged(object sender, LocationChangedEventArgs args)
 	{
-		TimerService.OnTimerElapsed -= OnTimerElapsed;
 		NavigationManager.LocationChanged -= OnLocationChanged;
 		string navigationMethod = args.IsNavigationIntercepted ? "HTML" : "code";
 	}

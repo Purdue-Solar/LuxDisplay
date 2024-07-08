@@ -19,6 +19,7 @@ builder.Services.AddSingleton<Encoder>(); // Only necessary for testing
 builder.Services.AddSingleton<MpptCollection>();
 builder.Services.AddSingleton<PeripheralCollection>();
 builder.Services.AddSingleton<SteeringWheel>();
+builder.Services.AddSingleton<Distribution>();
 builder.Services.AddSingleton<CanDecoder>();
 
 //builder.Services.AddHostedService<TestingDataIncrementService>();

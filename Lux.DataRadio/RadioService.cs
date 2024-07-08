@@ -50,7 +50,7 @@ public class RadioService(IConfiguration config, ILogger<RadioService> logger, I
 		get
 		{
 			double min = (DateTime.UtcNow - StartTime).TotalMinutes;
-			return (ushort)(60 * (min - Math.Floor(min)));
+			return (ushort)(60000 * (min - Math.Floor(min)));
 		}
 	}
 

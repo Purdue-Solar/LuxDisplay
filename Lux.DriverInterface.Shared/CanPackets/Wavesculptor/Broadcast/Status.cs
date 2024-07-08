@@ -96,7 +96,7 @@ public struct Status(Status.LimitFlags limits, Status.ErrorFlags errors, ushort 
     public enum LimitFlags : ushort
     {
         None = 0,
-        OverVoltagePwm = 1 << 0,
+        OutputVoltagePwm = 1 << 0,
         MotorCurrent = 1 << 1,
         Velocity = 1 << 2,
         BusCurrent = 1 << 3,

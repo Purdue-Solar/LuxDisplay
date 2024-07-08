@@ -6,6 +6,7 @@
 @inject MpptCollection mppts;
 @inject Encoder encoder;
 @inject Blinkers blinkers;
+@inject Distribution distribution;
 @inject SteeringWheel steering;
 @inject BackgroundDataService backgroundData;
 @inject NavigationManager NavigationManager;
@@ -42,6 +43,12 @@
 		<div class="symbol"><h1><Icon Name="IconName.ExclamationTriangle" Color="IconColor.Muted" /></h1></div>
 		<div class="symbol"><h1><Icon Name="IconName.Gear" Color="IconColor.Muted" /></h1></div>
 		<div class="symbol"><h1><Icon Name="IconName.ThermometerHigh" Color="IconColor.Muted" /></h1></div>
+	</div>
+	<div class="row-data">
+		<div class="symbol"><h4>Main: @distribution.MainVoltage.ToString("N2")V, @((int)distribution.MainPower)W</h4></div>
+	</div>
+	<div class="row-data">
+		<div class="symbol"><h4>Aux: @distribution.AuxVoltage.ToString("N2")V, @((int)distribution.AuxPower)W</h4></div>
 	</div>
 </div>
 <div class="bottom-info">

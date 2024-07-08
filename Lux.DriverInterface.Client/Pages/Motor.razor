@@ -41,14 +41,9 @@
     </article>
 </div>
 
-@code{
-    public int timerCount = 0;
-
-    private bool blinkerValLeft = false;
-    private bool blinkerValRight = false;
-
+@code
+{
     protected CancellationTokenSource CancellationSource = new();
-
 
     // Don't forget to unsubscribe from the event when the component is disposed.
     public void Dispose()

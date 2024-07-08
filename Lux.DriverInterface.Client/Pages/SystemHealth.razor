@@ -1,6 +1,5 @@
 ﻿@page "/SystemHealth"
 @inject BackgroundDataService backgroundData
-@inject TimerService TimerService;
 @inject NavigationManager NavigationManager;
 @using BlazorBootstrap;
 @using Lux.DriverInterface.Shared;
@@ -11,7 +10,7 @@
 <h1 class="center-line">System</h1>
 
 <div class="container">
-	<article style="position: absolute; top: 200px; left: 200">
+	<article style="position: absolute; top: 200px; left: 200px">
 		<p>Overall System Health</p>
 		<div>
 			<BlazorBootstrap.Progress Class="mb-3" Height="40" Style="width: 200px">
@@ -21,7 +20,7 @@
 		<p>XX / XXX Systems Up</p>
 	</article>
 
-	<article style="position: absolute; top: 350px; left: 200">
+	<article style="position: absolute; top: 350px; left: 200px">
 		<p>Data Transmission Rate</p>
 		<div>
 			<BlazorBootstrap.Progress Class="mb-3" Height="40" Style="width: 200px">
@@ -31,14 +30,14 @@
 		<p>XXX %</p>
 	</article>
 
-	<article style="position: absolute; top: 500px; left: 200">
+	<article style="position: absolute; top: 500px; left: 200px">
 		<p>CAN Data:</p>
 		<div>
 		</div>
 		<p>Value 1:</p>
 	</article>
 
-	<article style="position: absolute; top: 650px; left: 200">
+	<article style="position: absolute; top: 650px; left: 200px">
 		<p>Raw Sensor Data:</p>
 		<div>
 		</div>
@@ -67,7 +66,7 @@
 		NavigationManager.LocationChanged += OnLocationChanged;
 	}
 
-	async void OnLocationChanged(object sender, LocationChangedEventArgs args)
+	void OnLocationChanged(object sender, LocationChangedEventArgs args)
 	{
 		backgroundData.OnChange -= StateHasChanged;
 

@@ -19,6 +19,7 @@ builder.Services.AddSingleton<Encoder>();
 builder.Services.AddSingleton<MpptCollection>();
 builder.Services.AddSingleton<PeripheralCollection>();
 builder.Services.AddSingleton<SteeringWheel>();
+builder.Services.AddSingleton<Distribution>();
 builder.Services.AddSingleton<Blinkers>();
 builder.Services.AddSingleton<BackgroundDataService>();
 

@@ -9,11 +9,12 @@ using Encoder = Lux.DriverInterface.Shared.Encoder;
 namespace Lux.DriverInterface.Client;
 
 #nullable enable
-public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWheel steering, MpptCollection mppts, Encoder encoder, ILogger<BackgroundDataService> logger) : IDisposable
+public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWheel steering, Distribution distribution, MpptCollection mppts, Encoder encoder, ILogger<BackgroundDataService> logger) : IDisposable
 {
 	protected HttpClient Http { get; set; } = http;
 	protected WaveSculptor WaveSculptor { get; set; } = ws;
 	protected SteeringWheel SteeringWheel { get; set; } = steering;
+	protected Distribution Distribution { get; set; } = distribution;
 	protected MpptCollection MpptCollection { get; set; } = mppts;
 	protected Encoder Encoder { get; set; } = encoder;
 	protected ILogger Logger { get; set; } = logger;
@@ -31,6 +32,8 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 		_ = Task.Run(() => RetrieveMpptCollectionDataAsync(cancellation), cancellation);
 		await Task.Delay(50, cancellation);
 		_ = Task.Run(() => RetrieveEncoderDataAsync(cancellation), cancellation);
+		await Task.Delay(50, cancellation);
+		_ = Task.Run(() => RetrieveDistributionDataAsync(cancellation), cancellation);
 	}
 
 	const double WaveSculptorPeriod = 250;
@@ -182,7 +185,7 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 		timer.Dispose();
 	}
 
-	private const double EncoderPeriod = 500;
+	private const double EncoderPeriod = 250;
 	private async Task RetrieveEncoderDataAsync(CancellationToken token)
 	{
 		var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(EncoderPeriod));
@@ -206,6 +209,51 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 			catch (Exception ex)
 			{
 				Logger.LogError(ex, "Error retrieving Encoder data");
+			}
+
+			await timer.WaitForNextTickAsync(token);
+		}
+
+		_timers.Remove(timer);
+		timer.Dispose();
+	}
+
+	private const double DistributionPeriod = 500;
+	private async Task RetrieveDistributionDataAsync(CancellationToken token)
+	{
+		var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(DistributionPeriod));
+		_timers.Add(timer);
+
+		while (!token.IsCancellationRequested)
+		{
+			try
+			{
+				Distribution? response = await Http.GetFromJsonAsync<Distribution>("api/Distribution", token);
+				if (response is null)
+					return;
+
+				Distribution.Flags = response.Flags;
+				Distribution.RawMainVoltage = response.RawMainVoltage;
+				Distribution.RawAuxVoltage = response.RawAuxVoltage;
+				Distribution.VoltageScaleFactor = response.VoltageScaleFactor;
+				Distribution.RawMainCurrent = response.RawMainCurrent;
+				Distribution.RawAuxCurrent = response.RawAuxCurrent;
+				Distribution.CurrentScaleFactor = response.CurrentScaleFactor;
+				Distribution.RawMainTemperature = response.RawMainTemperature;
+				Distribution.RawAuxTemperature = response.RawAuxTemperature;
+				Distribution.TemperatureScaleFactor = response.TemperatureScaleFactor;
+				Distribution.RawMainPower = response.RawMainPower;
+				Distribution.RawAuxPower = response.RawAuxPower;
+				Distribution.PowerScaleFactor = response.PowerScaleFactor;
+				Distribution.RawMainEnergy = response.RawMainEnergy;
+				Distribution.RawAuxEnergy = response.RawAuxEnergy;
+				Distribution.EnergyScaleFactor = response.EnergyScaleFactor;
+
+				OnChange?.Invoke();
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "Error retrieving Distribution data");
 			}
 
 			await timer.WaitForNextTickAsync(token);
