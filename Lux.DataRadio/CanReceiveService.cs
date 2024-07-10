@@ -79,7 +79,7 @@ namespace Lux.DataRadio
 				SteeringStatus.ButtonFlags buttons = status.Buttons;
 
 				SteeringWheel.PushToTalkActive = (buttons & SteeringStatus.ButtonFlags.PushToTalk) != 0;
-				SteeringWheel.HeadlightsActive = (buttons & SteeringStatus.ButtonFlags.Headlight) != 0;
+				SteeringWheel.ControlMode = (buttons & SteeringStatus.ButtonFlags.Headlight) != 0;
 				SteeringWheel.RightTurnActive = (buttons & SteeringStatus.ButtonFlags.RightTurn) != 0;
 				SteeringWheel.HazardsActive = (buttons & SteeringStatus.ButtonFlags.Hazards) != 0;
 				SteeringWheel.LeftTurnActive = (buttons & SteeringStatus.ButtonFlags.LeftTurn) != 0;

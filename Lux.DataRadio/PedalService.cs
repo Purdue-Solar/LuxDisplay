@@ -185,7 +185,10 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 
 	private Encoder.ControlMode UpdateControlMode()
 	{
-		return Encoder.ControlMode.Speed;
+		if (SteeringWheel.ControlMode)
+			return Encoder.ControlMode.Speed;
+		else
+			return Encoder.ControlMode.Torque;
 
 		//bool regenEnable = RegenEnablePin.Read();
 		//RegenLedPin.Write(regenEnable);

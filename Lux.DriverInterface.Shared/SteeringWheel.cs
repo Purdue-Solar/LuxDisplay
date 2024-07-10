@@ -8,7 +8,7 @@ namespace Lux.DriverInterface.Shared;
 public class SteeringWheel
 {
 	public bool PushToTalkActive { get; set; }
-	public bool HeadlightsActive { get; set; }
+	public bool ControlMode { get; set; }
 	public bool RightTurnActive { get; set; }
 	public bool HazardsActive { get; set; }
 	public bool LeftTurnActive { get; set; }

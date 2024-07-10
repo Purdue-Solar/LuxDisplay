@@ -104,7 +104,7 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 					return;
 
 				SteeringWheel.PushToTalkActive = response.PushToTalkActive;
-				SteeringWheel.HeadlightsActive = response.HeadlightsActive;
+				SteeringWheel.ControlMode = response.ControlMode;
 				SteeringWheel.RightTurnActive = response.RightTurnActive;
 				SteeringWheel.HazardsActive = response.HazardsActive;
 				SteeringWheel.LeftTurnActive = response.LeftTurnActive;
