@@ -23,6 +23,7 @@ using PeripheralsStatus = Lux.DriverInterface.Shared.CanPackets.Peripherals.Stat
 using MpptStatus = Lux.DriverInterface.Shared.CanPackets.Elmar.Broadcast.Status;
 using SteeringStatus = Lux.DriverInterface.Shared.CanPackets.Steering.Status;
 using DistributionStatus = Lux.DriverInterface.Shared.CanPackets.Distribution.Status;
+using TelemetryStatus = Lux.DriverInterface.Shared.CanPackets.Telemetry.Status;
 using DistributionMessageId = Lux.DriverInterface.Shared.CanPackets.Distribution.MessageId;
 using Lux.DriverInterface.Shared.CanPackets.Display;
 using Lux.DriverInterface.Shared.CanPackets.Distribution;
@@ -48,6 +49,7 @@ namespace Lux.DataRadio
 			AddPeripheralDecoders();
 			AddSteeringWheelDecoders();
 			AddDistributionDecoders();
+			AddTelemetryDecoders();
 		}
 
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -285,7 +287,7 @@ namespace Lux.DataRadio
 			Decoder.AddPacketDecoder((Energy energy) =>
 			{
 				DistributionMessageId message = (DistributionMessageId)energy.CanId.MessageId;
-				
+
 				Distribution.EnergyScaleFactor = energy.Scale;
 				if (message == DistributionMessageId.MainEnergy)
 					Distribution.RawMainEnergy = energy.EnergyValue;
@@ -293,6 +295,23 @@ namespace Lux.DataRadio
 					Distribution.RawAuxEnergy = energy.EnergyValue;
 			});
 
+		}
+
+		private void AddTelemetryDecoders()
+		{
+			Decoder.AddPacketDecoder((TelemetryStatus status) =>
+			{
+				TelemetryStatus.StatusFlags flags = status.Flags;
+
+				Telemetry.BrakesEngaged = (flags & TelemetryStatus.StatusFlags.BrakesEngaged) != 0;
+				Telemetry.TemperatureWarning = (flags & TelemetryStatus.StatusFlags.TemperatureWarning) != 0;
+				Telemetry.TemperatureCritical = (flags & TelemetryStatus.StatusFlags.TemperatureCritical) != 0;
+
+				Telemetry.BrakePressure1 = status.BrakePressure1;
+				Telemetry.BrakePressure2 = status.BrakePressure2;
+				Telemetry.CabinTemperature = status.CabinTemp;
+				Telemetry.CabinHumiditiy = status.CabinHumidity;
+			});
 		}
 
 		public override void Dispose()
