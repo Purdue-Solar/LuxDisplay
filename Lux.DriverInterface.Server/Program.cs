@@ -42,6 +42,7 @@ builder.Services.AddHostedService<CanReceiveService>();
 
 builder.Services.AddSingleton<GpioWrapper>();
 builder.Services.AddHostedService<PedalService>();
+builder.Services.AddHostedService<CanAutoSender>();
 
 builder.Services.AddBlazorBootstrap(); // Add this line
 builder.Services.AddRazorPages();
