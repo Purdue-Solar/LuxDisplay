@@ -28,7 +28,7 @@ public class CanAutoSender(IConfiguration config, ICanServiceBase serviceBase, M
 		if (state is not CancellationToken token)
 			return;
 
-		using Timer mpptMaxVoltageTimer = new Timer(SendMpptMaxVoltage, null, 0, 1000);
+		//using Timer mpptMaxVoltageTimer = new Timer(SendMpptMaxVoltage, null, 0, 1000);
 
 		while (!token.IsCancellationRequested)
 		{
