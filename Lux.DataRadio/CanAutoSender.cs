@@ -13,7 +13,7 @@ public class CanAutoSender(IConfiguration config, ICanServiceBase serviceBase, M
 	public ICanServiceBase ServiceBase { get; } = serviceBase;
 	public MpptCollection Mppts { get; } = mppts;
 	
-	protected float MaxMpptVoltage { get; } = config.GetValue($"{nameof(CanAutoSender)}:{nameof(MaxMpptVoltage)}", 112.0f);
+	protected float MaxVoltage { get; } = config.GetValue($"{nameof(CanAutoSender)}:Mppts:{nameof(MaxVoltage)}", 112.0f);
 
 	protected override Task ExecuteAsync(CancellationToken stoppingToken)
 	{
@@ -40,7 +40,7 @@ public class CanAutoSender(IConfiguration config, ICanServiceBase serviceBase, M
 	{
 		for (int i = 0; i < Mppts.Count; i++)
 		{
-			DriverInterface.Shared.CanPackets.Elmar.Command.MaxOutputVoltage packet = new Lux.DriverInterface.Shared.CanPackets.Elmar.Command.MaxOutputVoltage(Mppts[(byte)i].DeviceId, MaxMpptVoltage);
+			DriverInterface.Shared.CanPackets.Elmar.Command.MaxOutputVoltage packet = new Lux.DriverInterface.Shared.CanPackets.Elmar.Command.MaxOutputVoltage(Mppts[(byte)i].DeviceId + DriverInterface.Shared.CanPackets.Elmar.ElmarBase.BaseId, MaxVoltage);
 
 			ServiceBase.Write(packet.ToCanFrame());
 		}
