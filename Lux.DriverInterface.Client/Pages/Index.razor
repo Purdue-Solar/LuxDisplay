@@ -8,6 +8,7 @@
 @inject Blinkers blinkers;
 @inject Distribution distribution;
 @inject SteeringWheel steering;
+@inject Telemetry telemetry;
 @inject BackgroundDataService backgroundData;
 @inject NavigationManager NavigationManager;
 
@@ -18,7 +19,7 @@
 <div class="container">
 	<div class="additional-speedometers">
 		<div class="additional-speedometer">
-			<div class="value">20</div>
+			<div class="value">@telemetry.CabinTemperature</div>
 			<div class="label">Cabin Temp &degC</div>
 		</div>
 		<div class="speedometer">
@@ -34,6 +35,12 @@
 			<div class="label">Power In (W)</div>
 		</div>
 	</div>
+	@if (!distribution.Flags.HasFlag(DriverInterface.Shared.CanPackets.Distribution.Status.StatusFlags.DcDcValid))
+	{
+		<div class="row-data">
+			<h1 style="color:red;font-weight:bold">ERROR: MAIN BATTERY FAULT</h1>
+		</div>
+	}
 	<div class="row-data">
 		<h1 style="@(!steering.CruiseActive ? "color: white" : string.Empty)">Cruise Control: @((int)(steering.TargetSpeed * Conversions.MpsToMph)) mph</h1>
 	</div>

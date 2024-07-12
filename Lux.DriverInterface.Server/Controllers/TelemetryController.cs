@@ -7,13 +7,9 @@ namespace Lux.DriverInterface.Server.Controllers
 	[ApiController]
 	public class TelemetryController(Telemetry telemetry) : Controller
 	{
-		private readonly Telemetry _telemetry = telemetry;
+		protected Telemetry Telemetry { get; } = telemetry;
 
 		[HttpGet]
-		public ActionResult<Telemetry> Get()
-		{
-
-			return _telemetry;
-		}
+		public Telemetry Get() => Telemetry;
 	}
 }

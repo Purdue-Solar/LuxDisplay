@@ -9,9 +9,10 @@ using Encoder = Lux.DriverInterface.Shared.Encoder;
 namespace Lux.DriverInterface.Client;
 
 #nullable enable
-public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWheel steering, Distribution distribution, MpptCollection mppts, Encoder encoder, ILogger<BackgroundDataService> logger) : IDisposable
+public class BackgroundDataService(HttpClient http, Telemetry telemetry, WaveSculptor ws, SteeringWheel steering, Distribution distribution, MpptCollection mppts, Encoder encoder, ILogger<BackgroundDataService> logger) : IDisposable
 {
 	protected HttpClient Http { get; set; } = http;
+	protected Telemetry Telemetry { get; set; } = telemetry;
 	protected WaveSculptor WaveSculptor { get; set; } = ws;
 	protected SteeringWheel SteeringWheel { get; set; } = steering;
 	protected Distribution Distribution { get; set; } = distribution;
@@ -34,6 +35,8 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 		_ = Task.Run(() => RetrieveEncoderDataAsync(cancellation), cancellation);
 		await Task.Delay(50, cancellation);
 		_ = Task.Run(() => RetrieveDistributionDataAsync(cancellation), cancellation);
+		await Task.Delay(50, cancellation);
+		_ = Task.Run(() => RetrieveTelemetryDataAsync(cancellation), cancellation);
 	}
 
 	const double WaveSculptorPeriod = 250;
@@ -252,6 +255,44 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 			catch (Exception ex)
 			{
 				Logger.LogError(ex, "Error retrieving Distribution data");
+			}
+
+			await timer.WaitForNextTickAsync(token);
+		}
+
+		_timers.Remove(timer);
+		timer.Dispose();
+	}
+
+	private const double TelemetryPeriod = 500;
+	private async Task RetrieveTelemetryDataAsync(CancellationToken token)
+	{
+		var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(TelemetryPeriod));
+		_timers.Add(timer);
+
+		while (!token.IsCancellationRequested)
+		{
+			try
+			{
+				Telemetry? response = await Http.GetFromJsonAsync<Telemetry>("api/Telemetry", token);
+				if (response is null)
+					return;
+
+				Telemetry.BrakesEngaged = response.BrakesEngaged;
+				Telemetry.TemperatureWarning = response.TemperatureWarning;
+				Telemetry.TemperatureCritical = response.TemperatureCritical;
+				Telemetry.BrakePressure1 = response.BrakePressure1;
+				Telemetry.BrakePressure2 = response.BrakePressure2;
+				Telemetry.CabinTemperature = response.CabinTemperature;
+				Telemetry.CabinHumiditiy = response.CabinHumiditiy;
+				Telemetry.RealBrakePressure1 = response.RealBrakePressure1;
+				Telemetry.RealBrakePressure2 = response.RealBrakePressure2;
+
+				OnChange?.Invoke();
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "Error retrieving Telemetry data");
 			}
 
 			await timer.WaitForNextTickAsync(token);

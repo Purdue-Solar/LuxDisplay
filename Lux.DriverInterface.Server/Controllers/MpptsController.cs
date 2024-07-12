@@ -10,7 +10,7 @@ public class MpptsController(MpptCollection mppts) : Controller
 	protected MpptCollection Mppts { get; } = mppts;
 
 	[HttpGet]
-	public Mppt? Get(int deviceId)
+	public Mppt Get(int deviceId)
 	{
 		if (deviceId >= Mppts.Count)
 			return null;
