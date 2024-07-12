@@ -27,7 +27,6 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 	protected SpiDevice? Spi { get; private set; }
 
 	private ushort _zeroValue = 0;
-	private double _lastPercent = 0;
 	private double Deadzone { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(Deadzone)}", 2.5);
 	private double FullAngle { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(FullAngle)}", 20.0);
 	private double MaxSpeed { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(MaxSpeed)}", 60.0);
@@ -46,7 +45,7 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 	private GpioPin ReversePin { get; } = new GpioPin(
 		wrapper,
 		config.GetValue($"{nameof(PedalService)}:{nameof(ReversePin)}:{nameof(GpioPin.PinNumber)}", 5),
-        config.GetValue($"{nameof(PedalService)}:{nameof(ReversePin)}:{nameof(GpioPin.PinMode)}", PinMode.InputPullUp),
+		config.GetValue($"{nameof(PedalService)}:{nameof(ReversePin)}:{nameof(GpioPin.PinMode)}", PinMode.InputPullUp),
 		config.GetValue($"{nameof(PedalService)}:{nameof(ReversePin)}:{nameof(GpioPin.InvertActive)}", true));
 
 	//private GpioPin RegenEnablePin { get; } = new GpioPin(
@@ -70,7 +69,8 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 	private const double HighRpm = 20000;
 	private const double LowRpm = -20000;
 
-	private static double PeadalCurve(double x) => Math.Pow(x, 2);
+	private static double TorquePedalCurve(double x) => Math.Pow(x, 1.2);
+	private static double SpeedPedalCurve(double x) => Math.Pow(x, 2);
 
 	private void HandlePedal(object? state)
 	{
@@ -133,26 +133,32 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 		else
 			percent = (rawPercent - deadzone) / (1 - deadzone);
 
-		_lastPercent = percent;
+		if (pedalState == Encoder.PedalState.Neutral)   // Neutral ignores the pedal position and doesn't send any commands
+			return;
+
+		Encoder.ControlMode mode = UpdateControlMode();
+		Amt.Mode = mode;
 
 		// Apply the pedal curve
-		percent = PeadalCurve(percent);
+		percent = mode == Encoder.ControlMode.Speed ? SpeedPedalCurve(percent) : TorquePedalCurve(percent);
 
 		Amt.Percentage = (float)percent;
 		Amt.Value = value;
-
-		if (pedalState == Encoder.PedalState.Neutral)   // Neutral ignores the pedal position and doesn't send any commands
-			return;
 
 		// Reverse pedal
 		if (pedalState == Encoder.PedalState.Reverse)
 			percent *= -ReverseMultiplier;
 
-		Encoder.ControlMode mode = UpdateControlMode();
-		Amt.Mode = mode;
 
 		Drive drive = mode == Encoder.ControlMode.Speed ? GetSpeedControl(percent) : GetTorqueControl(percent);
-		CanSend.SendPacket(drive);
+		try
+		{
+			CanSend.SendPacket(drive);
+		}
+		catch
+		{
+			
+		}
 	}
 
 	private Drive GetSpeedControl(double percent)
@@ -173,7 +179,7 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 	{
 		bool forwardPressed = ForwardPin.Read();
 		bool reversePresesd = ReversePin.Read();
-		
+
 		return (forwardPressed, reversePresesd) switch
 		{
 			(false, false) => Encoder.PedalState.Neutral,

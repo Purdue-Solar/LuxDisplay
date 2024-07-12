@@ -14,6 +14,8 @@ using DistributionStatus = Lux.DriverInterface.Shared.CanPackets.Distribution.St
 using Lux.DriverInterface.Shared;
 using System.Runtime.InteropServices.ObjectiveC;
 using Lux.DriverInterface.Shared.CanPackets.Distribution;
+using Lux.DriverInterface.Shared.CanPackets.Elmar;
+using Lux.DriverInterface.Shared.CanPackets.Elmar.Broadcast;
 
 namespace Lux.DataRadio;
 public interface IPacketQueue
@@ -92,6 +94,17 @@ public class PacketGeneratorService(IPacketQueue queue) : BackgroundService
 		Queue.Enqueue(packet.ToCanFrame());
 	}
 
+	private void GenerateMpptOutputPower(object? state)
+	{
+		if (state is not Random rand)
+			return;
+
+		uint id = ElmarBase.BaseId + (byte)(rand.Next() << 4) + (byte)BroadcastId.OutputMeasurements;
+		OutputMeasurements packet = new OutputMeasurements(id, rand.NextFloat(100, 115), rand.NextFloat(1, 2));
+
+		Queue.Enqueue(packet.ToCanFrame());
+	}
+
 	private void GenerateDistributionStatus(object? state)
 	{
 		if (state is not Random rand)
@@ -157,6 +170,8 @@ public class PacketGeneratorService(IPacketQueue queue) : BackgroundService
 		using Timer wsVelocity = new Timer(GenerateWSVelocity, new Random(), TimeSpan.FromMilliseconds(4), TimeSpan.FromMilliseconds(200));
 
 		using Timer steering = new Timer(GenerateSteeringPacket, new Random(), TimeSpan.FromMilliseconds(10), TimeSpan.FromMilliseconds(100));
+
+		using Timer mpptOutput = new Timer(GenerateMpptOutputPower, new Random(), TimeSpan.FromMilliseconds(20), TimeSpan.FromMilliseconds(200));
 
 		using Timer distributionStatus = new Timer(GenerateDistributionStatus, new Random(), TimeSpan.FromMilliseconds(20), TimeSpan.FromMilliseconds(100));
 		using Timer distributionBusVoltages = new Timer(GenerateDistributionBusVoltages, new Random(), TimeSpan.FromMilliseconds(30), TimeSpan.FromMilliseconds(100));

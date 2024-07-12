@@ -34,4 +34,30 @@ public class Mppt(byte deviceId)
 	public byte TestCounter { get; set; }
 	public float PowerConnectorVoltage { get; set; }
 	public float PowerConnectorTemp { get; set; }
+
+	public override string ToString()
+	{
+		StringBuilder sb = new();
+		sb.Append(DeviceId).Append(", ");
+		sb.Append(InputVoltage).Append(", ");
+		sb.Append(InputCurrent).Append(", ");
+		sb.Append(OutputVoltage).Append(", ");
+		sb.Append(OutputCurrent).Append(", ");
+		sb.Append(MosfetTemperature).Append(", ");
+		sb.Append(ControllerTemperature).Append(", ");
+		sb.Append(Voltage12V).Append(", ");
+		sb.Append(Voltage3V).Append(", ");
+		sb.Append(MaxOutputVoltage).Append(", ");
+		sb.Append(MaxInputCurrent).Append(", ");
+		sb.Append(RxErrorCount).Append(", ");
+		sb.Append(TxErrorCount).Append(", ");
+		sb.Append(TxOverflowCount).Append(", ");
+		sb.Append(ErrorFlags).Append(", ");
+		sb.Append(LimitFlags).Append(", ");
+		sb.Append(Mode).Append(", ");
+		sb.Append(TestCounter).Append(", ");
+		sb.Append(PowerConnectorVoltage).Append(", ");
+		sb.Append(PowerConnectorTemp);
+		return sb.ToString();
+	}
 }

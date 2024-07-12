@@ -7,8 +7,13 @@ namespace Lux.DriverInterface.Server.Controllers;
 [Route("api/[controller]")]
 public class MpptsController(MpptCollection mppts) : Controller
 {
-    protected MpptCollection Mppts { get; } = mppts;
+	protected MpptCollection Mppts { get; } = mppts;
 
-    [HttpGet]
-    public MpptCollection Get() => Mppts;
+	[HttpGet]
+	public Mppt? Get(int deviceId)
+	{
+		if (deviceId >= Mppts.Count)
+			return null;
+		return Mppts[(byte)deviceId];
+	}
 }

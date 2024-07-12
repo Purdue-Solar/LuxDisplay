@@ -81,7 +81,7 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 			{
 				Logger.LogError(ex, "Error retrieving WaveSculptor data");
 			}
-			
+
 			await timer.WaitForNextTickAsync(token);
 		}
 
@@ -122,7 +122,7 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 			{
 				Logger.LogError(ex, "Error retrieving Steering Wheel data");
 			}
-			
+
 			await timer.WaitForNextTickAsync(token);
 		}
 
@@ -130,7 +130,8 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 		timer.Dispose();
 	}
 
-	private const double MpptCollectionPeriod = 1000;
+	private const double MpptCollectionPeriod = 1000.0 / 3;
+	private int mpptId = 0;
 	private async Task RetrieveMpptCollectionDataAsync(CancellationToken token)
 	{
 		var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(MpptCollectionPeriod));
@@ -140,45 +141,42 @@ public class BackgroundDataService(HttpClient http, WaveSculptor ws, SteeringWhe
 		{
 			try
 			{
-				MpptCollection? response = await Http.GetFromJsonAsync<MpptCollection>("api/Mppts", token);
+				Mppt? response = await Http.GetFromJsonAsync<Mppt>($"api/Mppts?deviceId={mpptId}", token);
 				if (response is null)
 					return;
 
-				for (int i = 0; i < Math.Min(response.Mppts.Length, MpptCollection.Mppts.Length); i++)
-				{
-					Mppt mpptResponse = response.Mppts[i];
-					Mppt mppt = MpptCollection.Mppts[i];
+				MpptCollection.Mppts[mpptId].InputVoltage = response.InputVoltage;
+				MpptCollection.Mppts[mpptId].InputCurrent = response.InputCurrent;
+				MpptCollection.Mppts[mpptId].OutputVoltage = response.OutputVoltage;
+				MpptCollection.Mppts[mpptId].OutputCurrent = response.OutputCurrent;
+				MpptCollection.Mppts[mpptId].MosfetTemperature = response.MosfetTemperature;
+				MpptCollection.Mppts[mpptId].ControllerTemperature = response.ControllerTemperature;
+				MpptCollection.Mppts[mpptId].Voltage12V = response.Voltage12V;
+				MpptCollection.Mppts[mpptId].Voltage3V = response.Voltage3V;
+				MpptCollection.Mppts[mpptId].MaxOutputVoltage = response.MaxOutputVoltage;
+				MpptCollection.Mppts[mpptId].MaxInputCurrent = response.MaxInputCurrent;
+				MpptCollection.Mppts[mpptId].RxErrorCount = response.RxErrorCount;
+				MpptCollection.Mppts[mpptId].TxErrorCount = response.TxErrorCount;
+				MpptCollection.Mppts[mpptId].TxOverflowCount = response.TxOverflowCount;
+				MpptCollection.Mppts[mpptId].ErrorFlags = response.ErrorFlags;
+				MpptCollection.Mppts[mpptId].LimitFlags = response.LimitFlags;
+				MpptCollection.Mppts[mpptId].Mode = response.Mode;
+				MpptCollection.Mppts[mpptId].TestCounter = response.TestCounter;
+				MpptCollection.Mppts[mpptId].PowerConnectorVoltage = response.PowerConnectorVoltage;
+				MpptCollection.Mppts[mpptId].PowerConnectorTemp = response.PowerConnectorTemp;
 
-					mppt.InputVoltage = mpptResponse.InputVoltage;
-					mppt.InputCurrent = mpptResponse.InputCurrent;
-					mppt.OutputVoltage = mpptResponse.OutputVoltage;
-					mppt.OutputCurrent = mpptResponse.OutputCurrent;
-					mppt.MosfetTemperature = mpptResponse.MosfetTemperature;
-					mppt.ControllerTemperature = mpptResponse.ControllerTemperature;
-					mppt.Voltage12V = mpptResponse.Voltage12V;
-					mppt.Voltage3V = mpptResponse.Voltage3V;
-					mppt.MaxOutputVoltage = mpptResponse.MaxOutputVoltage;
-					mppt.MaxInputCurrent = mpptResponse.MaxInputCurrent;
-					mppt.RxErrorCount = mpptResponse.RxErrorCount;
-					mppt.TxErrorCount = mpptResponse.TxErrorCount;
-					mppt.TxOverflowCount = mpptResponse.TxOverflowCount;
-					mppt.ErrorFlags = mpptResponse.ErrorFlags;
-					mppt.LimitFlags = mpptResponse.LimitFlags;
-					mppt.Mode = mpptResponse.Mode;
-					mppt.TestCounter = mpptResponse.TestCounter;
-					mppt.PowerConnectorVoltage = mpptResponse.PowerConnectorVoltage;
-					mppt.PowerConnectorTemp = mpptResponse.PowerConnectorTemp;
-				}
+				Console.WriteLine(response);
 
 				OnChange?.Invoke();
-
 			}
 			catch (Exception ex)
 			{
 				Logger.LogError(ex, "Error retrieving MPPT data");
 			}
-			
+
 			await timer.WaitForNextTickAsync(token);
+			if (++mpptId == MpptCollection.Count)
+				mpptId = 0;
 		}
 
 		_timers.Remove(timer);

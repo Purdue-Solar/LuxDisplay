@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Lux.DriverInterface.Shared.CanPackets.Elmar.Broadcast;
-public readonly struct OutputMeasurements(uint id, float voltage, float current) : IReadableCanPacket<OutputMeasurements>
+public readonly struct OutputMeasurements(uint id, float voltage, float current) : IReadableCanPacket<OutputMeasurements>, IWriteableCanPacket<OutputMeasurements>
 {
 	public uint Id { get; } = id;
 	public static bool IsExtended => false;
@@ -53,6 +53,21 @@ public readonly struct OutputMeasurements(uint id, float voltage, float current)
 		float current = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(4));
 
 		packet = new OutputMeasurements(id, voltage, current);
+		return true;
+	}
+
+	public bool TryWrite(Span<byte> data, out int written)
+	{
+		if (data.Length < Size)
+		{
+			written = 0;
+			return false;
+		}
+
+		BinaryPrimitives.WriteSingleLittleEndian(data, OutputVoltage);
+		BinaryPrimitives.WriteSingleLittleEndian(data.Slice(4), OutputCurrent);
+
+		written = Size;
 		return true;
 	}
 }
