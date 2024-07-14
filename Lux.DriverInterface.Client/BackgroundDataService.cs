@@ -1,4 +1,4 @@
-﻿using Lux.DriverInterface.Shared;
+using Lux.DriverInterface.Shared;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
 using System.Text;

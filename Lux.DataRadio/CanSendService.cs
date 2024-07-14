@@ -1,4 +1,4 @@
-﻿using Lux.DriverInterface.Shared;
+using Lux.DriverInterface.Shared;
 using Microsoft.Extensions.Hosting;
 using SocketCANSharp;
 

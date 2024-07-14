@@ -1,4 +1,4 @@
-﻿using BlazorBootstrap;
+using BlazorBootstrap;
 using Lux.DriverInterface.Shared;
 
 namespace Lux.DriverInterface.Client;

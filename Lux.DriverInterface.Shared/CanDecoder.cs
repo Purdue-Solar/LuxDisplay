@@ -1,4 +1,4 @@
-﻿using Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast;
+using Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;

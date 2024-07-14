@@ -1,4 +1,4 @@
-﻿using Lux.DriverInterface.Shared;
+using Lux.DriverInterface.Shared;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System;

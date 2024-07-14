@@ -1,4 +1,4 @@
-﻿using Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast;
+using Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast;
 using Microsoft.Extensions.Hosting;
 using SocketCANSharp;
 using System;

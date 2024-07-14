@@ -1,4 +1,4 @@
-﻿using Lux.DriverInterface.Shared;
+using Lux.DriverInterface.Shared;
 using SocketCANSharp;
 using System;
 using System.Collections.Generic;

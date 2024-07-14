@@ -1,4 +1,4 @@
-﻿//using Lux.DriverInterface.Shared;
+//using Lux.DriverInterface.Shared;
 //using Microsoft.AspNetCore.Mvc;
 
 //namespace Lux.DriverInterface.Server.Controllers

@@ -1,4 +1,4 @@
-﻿namespace Lux.DriverInterface.Shared
+namespace Lux.DriverInterface.Shared
 {
 	public class Header
 	{
