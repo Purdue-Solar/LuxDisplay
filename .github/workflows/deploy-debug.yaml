@@ -8,7 +8,7 @@ on:
 
 env:
   PUBLISH_PATH: "/app"
-  DOTNET: "/usr/local/bin/dotnet"
+  DOTNET: "~/.dotnet/dotnet"
 
 jobs:
 
