@@ -151,9 +151,11 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 
 
 		Drive drive = mode == Encoder.ControlMode.Speed ? GetSpeedControl(percent) : GetTorqueControl(percent);
+		Power power = new Power(0, 1.0f);
 		try
 		{
 			CanSend.SendPacket(drive);
+			CanSend.SendPacket(power);
 		}
 		catch
 		{

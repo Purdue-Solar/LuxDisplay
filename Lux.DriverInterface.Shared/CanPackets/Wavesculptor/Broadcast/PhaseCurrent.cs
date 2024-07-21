@@ -10,21 +10,23 @@ using System.Threading.Tasks;
 namespace Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast;
 public struct PhaseCurrent(float phaseBCurrent, float phaseCCurent) : IReadableCanPacket<PhaseCurrent>
 {
-    public static uint CanId => WaveSculptorBase.BroadcastBaseId + (uint)BroadcastId.PhaseCurrent;
-    public readonly uint Id => CanId;
-    public static bool IsExtended => false;
-    public static int Size => 8;
+	public static uint CanId => WaveSculptorBase.BroadcastBaseId + (uint)BroadcastId.PhaseCurrent;
+	public readonly uint Id => CanId;
+	public static bool IsExtended => false;
+	public static int Size => 8;
 
-    /// <summary>
-    /// The current in phase B (A rms)
-    /// </summary>
-    public float PhaseBCurrent { get; set; } = phaseBCurrent;
-    /// <summary>
-    /// The current in phase C (A rms)
-    /// </summary>
-    public float PhaseCCurrent { get; set; } = phaseCCurent;
+	/// <summary>
+	/// The current in phase B (A rms)
+	/// </summary>
+	[FieldLabel("(A rms)")] 
+	public float PhaseBCurrent { get; set; } = phaseBCurrent;
+	/// <summary>
+	/// The current in phase C (A rms)
+	/// </summary>
+	[FieldLabel("(A rms)")] 
+	public float PhaseCCurrent { get; set; } = phaseCCurent;
 
-    public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
+	public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
 
 	static bool IReadableCanPacket.TryRead(uint id, bool extended, ReadOnlySpan<byte> data, [NotNullWhen(true)] out IReadableCanPacket? readableCanPacket)
 	{
@@ -39,7 +41,7 @@ public struct PhaseCurrent(float phaseBCurrent, float phaseCCurent) : IReadableC
 	}
 
 	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out PhaseCurrent packet)
-    {
+	{
 		if (!IsValidId(id, isExtended) || data.Length < Size)
 		{
 			packet = default;
@@ -50,9 +52,9 @@ public struct PhaseCurrent(float phaseBCurrent, float phaseCCurent) : IReadableC
 		ReadOnlySpan<byte> a = MemoryMarshal.CreateReadOnlySpan(in data[0], Size);
 
 		float phaseBCurrent = BinaryPrimitives.ReadSingleLittleEndian(a);
-        float phaseCCurent = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
+		float phaseCCurent = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
 
-        packet = new PhaseCurrent(phaseBCurrent, phaseCCurent);
-        return true;
-    }
+		packet = new PhaseCurrent(phaseBCurrent, phaseCCurent);
+		return true;
+	}
 }

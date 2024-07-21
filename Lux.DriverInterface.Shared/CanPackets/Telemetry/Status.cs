@@ -19,11 +19,12 @@ public readonly struct Status(uint id, Status.StatusFlags flags, byte brakePress
 	public StatusFlags Flags { get; } = flags;
 	public byte BrakePressure1 { get; } = brakePressure1;
 	public byte BrakePressure2 { get; } = brakePressure2;
+	[FieldLabel("(deg C)")]
 	public byte CabinTemp { get; } = cabinTemp;
+	[FieldLabel("(%)")]
 	public byte CabinHumidity { get; } = cabinHumidity;
 	public byte Reserved1 { get; } = 0;
 	public byte Reserved2 { get; } = 0;
-
 
 	private static uint IdMask { get; } = (PsrCanId.DeviceTypeMask | PsrCanId.MessageIdMask).ToInteger();
 	private static uint IdEq { get; } = PsrCanId.ToInteger(0, 0, (byte)MessageId.Status, CanIds.DeviceType.Telemetry, 0x00);

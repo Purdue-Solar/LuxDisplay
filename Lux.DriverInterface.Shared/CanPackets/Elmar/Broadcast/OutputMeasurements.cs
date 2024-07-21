@@ -18,10 +18,12 @@ public readonly struct OutputMeasurements(uint id, float voltage, float current)
 	/// <summary>
 	/// The voltage at the output (V)
 	/// </summary>
+	[FieldLabel("(V)")] 
 	public float OutputVoltage { get; } = voltage;
 	/// <summary>
 	/// The output current (A)
 	/// </summary>
+	[FieldLabel("(A)")] 
 	public float OutputCurrent { get; } = current;
 
 	public static bool IsValidId(uint id, bool isExtended) => !isExtended && (id & ElmarBase.BaseMessageMask) == ElmarBase.BaseId + (uint)BroadcastId.OutputMeasurements;

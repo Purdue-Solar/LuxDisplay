@@ -18,10 +18,12 @@ public readonly struct Limits(uint id, float maxOutputVoltage, float maxInputCur
 	/// <summary>
 	/// The maximum output voltage (V)
 	/// </summary>
+	[FieldLabel("(V)")] 
 	public float MaxOutputVoltage { get; } = maxOutputVoltage;
 	/// <summary>
 	/// The maximum input current (A)
 	/// </summary>
+	[FieldLabel("(A)")] 
 	public float MaxInputCurrent { get; } = maxInputCurrent;
 	
 	public static bool IsValidId(uint id, bool isExtended) => !isExtended && (id & ElmarBase.BaseMessageMask) == ElmarBase.BaseId + (uint)BroadcastId.Limits;

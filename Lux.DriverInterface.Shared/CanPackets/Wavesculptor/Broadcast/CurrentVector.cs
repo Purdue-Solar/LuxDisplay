@@ -10,21 +10,23 @@ using System.Threading.Tasks;
 namespace Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast;
 public struct CurrentVector(float iq, float id) : IReadableCanPacket<CurrentVector>
 {
-    public static uint CanId => WaveSculptorBase.BroadcastBaseId + (uint)BroadcastId.CurrentVector;
-    public readonly uint Id => CanId;
-    public static bool IsExtended => false;
-    public static int Size => 8;
+	public static uint CanId => WaveSculptorBase.BroadcastBaseId + (uint)BroadcastId.CurrentVector;
+	public readonly uint Id => CanId;
+	public static bool IsExtended => false;
+	public static int Size => 8;
 
-    /// <summary>
-    /// Imaginary component of the applied non-rotating current vector to the motor (A)
-    /// </summary>
-    public float CurrentQ { get; set; } = iq;
-    /// <summary>
-    /// Real component of the applied non-rotating voltage current vector to the motor (A)
-    /// </summary>
-    public float CurrentD { get; set; } = id;
+	/// <summary>
+	/// Imaginary component of the applied non-rotating current vector to the motor (A)
+	/// </summary>
+	[FieldLabel("(A)")]
+	public float CurrentQ { get; set; } = iq;
+	/// <summary>
+	/// Real component of the applied non-rotating voltage current vector to the motor (A)
+	/// </summary>
+	[FieldLabel("(A)")] 
+	public float CurrentD { get; set; } = id;
 
-    public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
+	public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
 
 	static bool IReadableCanPacket.TryRead(uint id, bool extended, ReadOnlySpan<byte> data, [NotNullWhen(true)] out IReadableCanPacket? readableCanPacket)
 	{
@@ -39,7 +41,7 @@ public struct CurrentVector(float iq, float id) : IReadableCanPacket<CurrentVect
 	}
 
 	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out CurrentVector packet)
-    {
+	{
 		if (!IsValidId(id, isExtended) || data.Length < Size)
 		{
 			packet = default;
@@ -50,9 +52,9 @@ public struct CurrentVector(float iq, float id) : IReadableCanPacket<CurrentVect
 		ReadOnlySpan<byte> a = MemoryMarshal.CreateReadOnlySpan(in data[0], Size);
 
 		float iQ = BinaryPrimitives.ReadSingleLittleEndian(a);
-        float iD = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
+		float iD = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
 
-        packet = new CurrentVector(iQ, iD);
-        return true;
-    }
+		packet = new CurrentVector(iQ, iD);
+		return true;
+	}
 }

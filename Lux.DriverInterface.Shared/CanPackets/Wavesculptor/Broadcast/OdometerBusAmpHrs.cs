@@ -15,14 +15,16 @@ public readonly struct OdometerBusAmpHrs(float odometer, float dcBusAmpHrs) : IR
     public static bool IsExtended => false;
     public static int Size => 8;
 
-    /// <summary>
-    /// Distance the vehicle has travelled since reset (m)
-    /// </summary>
-    public float Odometer { get; } = odometer;
-    /// <summary>
-    /// Charge flow into the controller DC bus from the time of reset (Ah)
-    /// </summary>
-    public float DcBusAmpHrs { get; } = dcBusAmpHrs;
+	/// <summary>
+	/// Distance the vehicle has travelled since reset (m)
+	/// </summary>
+	[FieldLabel("(m)")] 
+	public float Odometer { get; } = odometer;
+	/// <summary>
+	/// Charge flow into the controller DC bus from the time of reset (Ah)
+	/// </summary>
+	[FieldLabel("(Ah)")]
+	public float DcBusAmpHrs { get; } = dcBusAmpHrs;
 
     public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
 

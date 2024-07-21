@@ -27,12 +27,14 @@ using TelemetryStatus = Lux.DriverInterface.Shared.CanPackets.Telemetry.Status;
 using DistributionMessageId = Lux.DriverInterface.Shared.CanPackets.Distribution.MessageId;
 using Lux.DriverInterface.Shared.CanPackets.Display;
 using Lux.DriverInterface.Shared.CanPackets.Distribution;
+using Lux.DriverInterface.Shared.CanPackets.Battery;
 
 namespace Lux.DataRadio
 {
-	public class CanReceiveService(ICanServiceBase serviceBase, WaveSculptor wsc, MpptCollection mppts, PeripheralCollection peripherals, SteeringWheel steering, Distribution distribution, Telemetry telemetry, CanDecoder decoder) : BackgroundService
+	public class CanReceiveService(ICanServiceBase serviceBase, Battery battery, WaveSculptor wsc, MpptCollection mppts, PeripheralCollection peripherals, SteeringWheel steering, Distribution distribution, Telemetry telemetry, CanDecoder decoder) : BackgroundService
 	{
 		protected ICanServiceBase ServiceBase { get; } = serviceBase;
+		protected Battery Battery { get; } = battery;
 		protected WaveSculptor WaveSculptor { get; } = wsc;
 		protected MpptCollection Mppts { get; } = mppts;
 		protected PeripheralCollection Peripherals { get; } = peripherals;
@@ -50,6 +52,7 @@ namespace Lux.DataRadio
 			AddSteeringWheelDecoders();
 			AddDistributionDecoders();
 			AddTelemetryDecoders();
+			AddBatteryDecoders();
 		}
 
 		protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -196,10 +199,10 @@ namespace Lux.DataRadio
 
 			Decoder.AddPacketDecoder((VelocityMeasurement velocity) =>
 			{
-				WaveSculptor.VehicleVelocity = velocity.VehicleVelocity;
 				WaveSculptor.MotorVelocity = velocity.MotorVelocity;
+				WaveSculptor.VehicleVelocity = velocity.VehicleVelocity;
 
-				RelayedVelocity relay = new RelayedVelocity((uint)RelayedVelocity.DefaultId, velocity.VehicleVelocity);
+				RelayedVelocity relay = new RelayedVelocity((uint)RelayedVelocity.DefaultId, velocity.MotorVelocity, velocity.VehicleVelocity);
 				ServiceBase.Write(relay.ToCanFrame());
 			});
 
@@ -311,6 +314,44 @@ namespace Lux.DataRadio
 				Telemetry.BrakePressure2 = status.BrakePressure2;
 				Telemetry.CabinTemperature = status.CabinTemp;
 				Telemetry.CabinHumiditiy = status.CabinHumidity;
+			});
+		}
+
+		private void AddBatteryDecoders()
+		{
+			Decoder.AddPacketDecoder((Status1 status) => { 
+				Battery.Current = status.Current * Status1.CurrentFactor;
+				Battery.Voltage = status.Voltage * Status1.VoltageFactor;
+				Battery.StateOfCharge = status.StateOfCharge * Status1.StateOfChargeFactor;
+				Battery.RelayState = status.Relays;
+				Battery.FailsafeStatus = status.Failsafe;
+				Battery.AverageTemperature = status.AverageTemperature;
+			});
+
+			Decoder.AddPacketDecoder((Status2 status) =>
+			{
+				Battery.PackDCL = status.PackDcl;
+				Battery.PackCCL = status.PackCcl;
+				Battery.LowTemperature = status.LowTemperature;
+				Battery.HighTemperature = status.HighTemperature;
+				Battery.CurrentLimits = status.CurrentLimits;
+				Battery.PackPower = status.PackKwPower * Status2.PackKwPowerFactor;
+			});
+
+			Decoder.AddPacketDecoder((PackAmpHours packAmpHours) =>
+			{
+				Battery.PackAmpHours = packAmpHours.AmpHours * PackAmpHours.AmpHoursFactor;
+				Battery.AdaptivePackAmpHours = packAmpHours.AdaptiveAmpHours * PackAmpHours.AmpHoursFactor;
+			});
+
+			Decoder.AddPacketDecoder((CellVoltageAndTemperature cellVoltages) =>
+			{
+				Battery.LowCellVoltage = cellVoltages.LowCellVoltage;
+				Battery.HighCellVoltage = cellVoltages.HighCellVoltage;
+				Battery.LowVoltageCellId = cellVoltages.LowCellId;
+				Battery.HighVoltageCellId = cellVoltages.HighCellId;
+				Battery.LowTemperatureId = cellVoltages.LowTempId;
+				Battery.HighTemperatureId = cellVoltages.HighTempId;
 			});
 		}
 

@@ -16,8 +16,10 @@ public struct BusMeasurement(float voltage, float current) : IReadableCanPacket<
 
     public static int Size => 8;
 
-    public float BusVoltage { get; set; } = voltage;
-    public float BusCurrent { get; set; } = current;
+	[FieldLabel("(V)")] 
+	public float BusVoltage { get; set; } = voltage;
+	[FieldLabel("(A)")] 
+	public float BusCurrent { get; set; } = current;
 
     public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
 

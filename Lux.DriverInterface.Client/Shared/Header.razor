@@ -6,60 +6,74 @@
 @inject SteeringWheel steering
 @inject Encoder encoder
 @inject BackgroundDataService backgroundData
+@inject NavigationManager NavigationManager
 
 <div class="header-flex">
-    <div class="header-item">
-        <h1 style="font-size:70px"><Icon Name="IconName.ArrowLeftCircleFill" Color="blinkers.LeftColor" /></h1>
-    </div>
-    @if(DisplayVelocities)
-    {
-        <div class="header-item">
-            <h1 class="@(steering.CruiseActive ? "cruise-active" : string.Empty)">@((int)(ws.VehicleVelocity * Conversions.MpsToMph))</h1> <h4>mph</h4>
-        </div>
-    }
-    <div class="header-item">
-        <h1 style="font-size:50px"><Icon Name="PushToTalkIcon" Color="IconColor.Muted" /></h1>
-    </div>
-    <div class="header-item">
-        <h1 style="font-size:50px;font-weight:bold">@PedalState</h1>
-    </div>
-    @if (DisplayVelocities)
-    {
-        <div class="header-item">
-            <h1>@((int)(ws.MotorVelocity))</h1> <h4>rpm</h4>
-	    </div>   
-    }
-    <div class="header-item">
-        <h1 style="font-size:70px"><Icon Name="IconName.ArrowRightCircleFill" Color="blinkers.RightColor" /></h1>
+	<div class="header-item">
+		<h1 style="font-size:70px"><Icon Name="IconName.ArrowLeftCircleFill" Color="blinkers.LeftColor" /></h1>
+	</div>
+	@if (DisplayVelocities)
+	{
+		<div class="header-item">
+			<h1 class="@(steering.CruiseActive ? "cruise-active" : string.Empty)">@((int)(ws.VehicleVelocity * Conversions.MpsToMph))</h1> <h4>mph</h4>
+		</div>
+	}
+	<div class="header-item">
+		<h1 style="font-size:50px"><Icon Name="PushToTalkIcon" Color="IconColor.Muted" /></h1>
+	</div>
+	<div class="header-item">
+		<h1 style="font-size:50px;font-weight:bold">@PedalState</h1>
+	</div>
+	@if (DisplayVelocities)
+	{
+		<div class="header-item">
+			<h1>@((int)(ws.MotorVelocity))</h1> <h4>rpm</h4>
+		</div>
+	}
+	<div class="header-item">
+		<h1 style="font-size:70px"><Icon Name="IconName.ArrowRightCircleFill" Color="blinkers.RightColor" /></h1>
 	</div>
 </div>
 
 @code {
-    [Parameter]
-    public bool DisplayVelocities { get; set; } = true;
+	public byte CurrentPage { get; protected set; } = 0;
 
-    public IconName PushToTalkIcon => steering.PushToTalkActive ? IconName.VolumeUpFill : IconName.VolumeMute;
+	[Parameter]
+	public bool DisplayVelocities { get; set; } = true;
 
-    public char PedalState
-    {
-        get
-        {
-            return encoder.State switch
-            {
-                Encoder.PedalState.Forward => 'F',
-                Encoder.PedalState.Reverse => 'R',
-                _ => 'N'
-            };
-        }
-    }
+	public IconName PushToTalkIcon => steering.PushToTalkActive ? IconName.VolumeUpFill : IconName.VolumeMute;
 
-    protected override void OnInitialized()
-    {
-        backgroundData.OnChange += StateHasChanged;
-        base.OnInitialized();
-    }
+	public static string[] PageTable = new string[]
+	{
+		"/",
+		"/map",
+		"/solar",
+		"/motor",
+		"/battery",
+		"/systemhealth",
+		"/notes"
+	};
 
-    public void Dispose()
+	public char PedalState
+	{
+		get
+		{
+			return encoder.State switch
+			{
+				Encoder.PedalState.Forward => 'F',
+				Encoder.PedalState.Reverse => 'R',
+				_ => 'N'
+			};
+		}
+	}
+
+	protected override void OnInitialized()
+	{
+		backgroundData.OnChange += StateHasChanged;
+		base.OnInitialized();
+	}
+
+	public void Dispose()
 	{
 		backgroundData.OnChange -= StateHasChanged;
 	}

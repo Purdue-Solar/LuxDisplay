@@ -18,10 +18,12 @@ public readonly struct PowerConnector(uint id, float outputVoltage, float connec
 	/// <summary>
 	/// Output Voltage (Battery side of fuse) (V)
 	/// </summary>
+	[FieldLabel("(V)")] 
 	public float OutputVoltage { get; } = outputVoltage;
 	/// <summary>
 	/// Power connector temperature (deg Celcius)
 	/// </summary>
+	[FieldLabel("(deg C)")]
 	public float ConnectorTemperature { get; } = connectorTemp;
 
 	public static bool IsValidId(uint id, bool extended) => !extended && (id & ElmarBase.BaseMessageMask) == ElmarBase.BaseId + (uint)BroadcastId.PowerConnector;

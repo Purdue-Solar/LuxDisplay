@@ -252,7 +252,7 @@ public class RadioService(IConfiguration config, ILogger<RadioService> logger, I
 
 				SerialPacket.SyncPacket.TryWrite(syncBuffer);
 				if (OutputPort is not null && OutputPort.IsOpen)
-					_ = OutputPort.BaseStream.WriteAsync(syncBuffer, cancelSource.Token);
+					OutputPort.BaseStream.Write(syncBuffer);
 
 				CanPool.Return(syncBuffer);
 			}
@@ -308,7 +308,7 @@ public class RadioService(IConfiguration config, ILogger<RadioService> logger, I
 
 	private readonly ref struct SerialPacket(uint id, bool isExtended, ushort timestamp, byte length, ReadOnlySpan<byte> data)
 	{
-		public uint Id { get; private init; } = isExtended ? 0x8000000 | id : id;
+		public uint Id { get; private init; } = isExtended ? 0x80000000 | id : id;
 		public bool IsExtended => (Id & 0x80000000) != 0;
 		public ushort Timestamp { get; private init; } = timestamp;
 		public byte Length { get; private init; } = length;

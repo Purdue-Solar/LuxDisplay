@@ -15,6 +15,7 @@ public readonly struct BusVoltages(uint id, short mainVoltage, short auxVoltage,
 
 	public uint Id => CanId.ToInteger();
 
+
 	public short MainVoltage { get; } = mainVoltage;
 	public short AuxVoltage { get; } = auxVoltage;
 	public float Scale { get; } = scale;

@@ -19,10 +19,12 @@ public readonly struct AuxiliaryPowerSupply(uint id, float voltage12V, float vol
 	/// <summary>
 	/// The voltage of the 12V supply (V)
 	/// </summary>
+	[FieldLabel("(V)")] 
 	public float Voltage12V { get; } = voltage12V;
 	/// <summary>
 	/// The voltage of the 3V supply (V)
 	/// </summary>
+	[FieldLabel("(V)")] 
 	public float Voltage3V { get; } = voltage3V;
 
 	public static bool IsValidId(uint id, bool isExtended) => !isExtended && (id & ElmarBase.BaseMessageMask) == ElmarBase.BaseId + (uint)BroadcastId.AuxiliaryPowerSupply;

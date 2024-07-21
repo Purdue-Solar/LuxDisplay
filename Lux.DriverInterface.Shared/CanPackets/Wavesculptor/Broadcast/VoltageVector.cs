@@ -18,10 +18,12 @@ public struct VoltageVector(float vq, float vd) : IReadableCanPacket<VoltageVect
 	/// <summary>
 	/// Imaginary component of the applied non-rotating voltage vector to the motor (V)
 	/// </summary>
+	[FieldLabel("(V)")] 
 	public float Vq { get; set; } = vq;
 	/// <summary>
 	/// Real component of the applied non-rotating voltage vector to the motor (V)
 	/// </summary>
+	[FieldLabel("(V)")] 
 	public float Vd { get; set; } = vd;
 
 	public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;

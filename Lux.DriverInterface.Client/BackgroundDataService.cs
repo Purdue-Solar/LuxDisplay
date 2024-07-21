@@ -9,12 +9,14 @@ using Encoder = Lux.DriverInterface.Shared.Encoder;
 namespace Lux.DriverInterface.Client;
 
 #nullable enable
-public class BackgroundDataService(HttpClient http, Telemetry telemetry, WaveSculptor ws, SteeringWheel steering, Distribution distribution, MpptCollection mppts, Encoder encoder, ILogger<BackgroundDataService> logger) : IDisposable
+public class BackgroundDataService(HttpClient http, Battery battery, Telemetry telemetry, WaveSculptor ws, SteeringWheel steering, Distribution distribution, MpptCollection mppts, Encoder encoder, ILogger<BackgroundDataService> logger) : IDisposable
 {
 	protected HttpClient Http { get; set; } = http;
+	protected Battery Battery { get; set; } = battery;
 	protected Telemetry Telemetry { get; set; } = telemetry;
 	protected WaveSculptor WaveSculptor { get; set; } = ws;
 	protected SteeringWheel SteeringWheel { get; set; } = steering;
+	public event Action<SteeringWheel> OnSteeringWheelUpdate = (steering) => { };
 	protected Distribution Distribution { get; set; } = distribution;
 	protected MpptCollection MpptCollection { get; set; } = mppts;
 	protected Encoder Encoder { get; set; } = encoder;
@@ -26,6 +28,8 @@ public class BackgroundDataService(HttpClient http, Telemetry telemetry, WaveScu
 
 	public async Task StartAsync(CancellationToken cancellation = default)
 	{
+		_ = Task.Run(() => RetrieveBatteryDataAsync(cancellation), cancellation);
+		await Task.Delay(50, cancellation);
 		_ = Task.Run(() => RetrieveWaveSculptorDataAsync(cancellation), cancellation);
 		await Task.Delay(50, cancellation);
 		_ = Task.Run(() => RetrieveSteeringWheelDataAsync(cancellation), cancellation);
@@ -37,6 +41,55 @@ public class BackgroundDataService(HttpClient http, Telemetry telemetry, WaveScu
 		_ = Task.Run(() => RetrieveDistributionDataAsync(cancellation), cancellation);
 		await Task.Delay(50, cancellation);
 		_ = Task.Run(() => RetrieveTelemetryDataAsync(cancellation), cancellation);
+	}
+
+	const double BatteryPeriod = 250;
+	private async Task RetrieveBatteryDataAsync(CancellationToken token)
+	{
+		var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(BatteryPeriod));
+		_timers.Add(timer);
+
+		while (!token.IsCancellationRequested)
+		{
+			try
+			{
+				Battery? response = await Http.GetFromJsonAsync<Battery>("api/Battery", token);
+				if (response is null)
+					return;
+
+				Battery.Current = response.Current;
+				Battery.Voltage = response.Voltage;
+				Battery.PackPower = response.PackPower;
+				Battery.StateOfCharge = response.StateOfCharge;
+				Battery.RelayState = response.RelayState;
+				Battery.FailsafeStatus = response.FailsafeStatus;
+				Battery.CurrentLimits = response.CurrentLimits;
+				Battery.PackDCL = response.PackDCL;
+				Battery.PackCCL = response.PackCCL;
+				Battery.PackAmpHours = response.PackAmpHours;
+				Battery.AdaptivePackAmpHours = response.AdaptivePackAmpHours;
+				Battery.LowCellVoltage = response.LowCellVoltage;
+				Battery.HighCellVoltage = response.HighCellVoltage;
+				Battery.LowVoltageCellId = response.LowVoltageCellId;
+				Battery.HighVoltageCellId = response.HighVoltageCellId;
+				Battery.AverageTemperature = response.AverageTemperature;
+				Battery.LowTemperature = response.LowTemperature;
+				Battery.HighTemperature = response.HighTemperature;
+				Battery.LowTemperatureId = response.LowTemperatureId;
+				Battery.HighTemperatureId = response.HighTemperatureId;
+
+				OnChange?.Invoke();
+			}
+			catch (Exception ex)
+			{
+				Logger.LogError(ex, "Error retrieving Battery data");
+			}
+
+			await timer.WaitForNextTickAsync(token);
+		}
+
+		_timers.Remove(timer);
+		timer.Dispose();
 	}
 
 	const double WaveSculptorPeriod = 250;
@@ -119,6 +172,7 @@ public class BackgroundDataService(HttpClient http, Telemetry telemetry, WaveScu
 				SteeringWheel.TargetSpeed = response.TargetSpeed;
 
 				OnChange?.Invoke();
+				OnSteeringWheelUpdate?.Invoke(SteeringWheel);
 
 			}
 			catch (Exception ex)

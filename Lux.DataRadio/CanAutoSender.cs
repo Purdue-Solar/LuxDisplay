@@ -1,4 +1,6 @@
 using Lux.DriverInterface.Shared;
+using Lux.DriverInterface.Shared.CanPackets.Elmar;
+using Lux.DriverInterface.Shared.CanPackets.Elmar.Command;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -13,7 +15,9 @@ public class CanAutoSender(IConfiguration config, ICanServiceBase serviceBase, M
 	public ICanServiceBase ServiceBase { get; } = serviceBase;
 	public MpptCollection Mppts { get; } = mppts;
 	
-	protected float MaxVoltage { get; } = config.GetValue($"{nameof(CanAutoSender)}:Mppts:{nameof(MaxVoltage)}", 112.0f);
+	protected float MaxVoltage0 { get; } = config.GetValue($"{nameof(CanAutoSender)}:Mppts:{nameof(MaxVoltage0)}", 113.0f);
+	protected float MaxVoltage1 { get; } = config.GetValue($"{nameof(CanAutoSender)}:Mppts:{nameof(MaxVoltage1)}", 112.8f);
+	protected float MaxVoltage2 { get; } = config.GetValue($"{nameof(CanAutoSender)}:Mppts:{nameof(MaxVoltage2)}", 112.6f);
 
 	protected override Task ExecuteAsync(CancellationToken stoppingToken)
 	{
@@ -28,7 +32,7 @@ public class CanAutoSender(IConfiguration config, ICanServiceBase serviceBase, M
 		if (state is not CancellationToken token)
 			return;
 
-		//using Timer mpptMaxVoltageTimer = new Timer(SendMpptMaxVoltage, null, 0, 1000);
+		using Timer mpptMaxVoltageTimer = new Timer(SendMpptMaxVoltage, null, 0, 1000);
 
 		while (!token.IsCancellationRequested)
 		{
@@ -38,9 +42,10 @@ public class CanAutoSender(IConfiguration config, ICanServiceBase serviceBase, M
 
 	private void SendMpptMaxVoltage(object? state)
 	{
+		float[] values = [ MaxVoltage0, MaxVoltage1, MaxVoltage2 ];
 		for (int i = 0; i < Mppts.Count; i++)
 		{
-			DriverInterface.Shared.CanPackets.Elmar.Command.MaxOutputVoltage packet = new Lux.DriverInterface.Shared.CanPackets.Elmar.Command.MaxOutputVoltage(Mppts[(byte)i].DeviceId + DriverInterface.Shared.CanPackets.Elmar.ElmarBase.BaseId, MaxVoltage);
+			MaxOutputVoltage packet = new MaxOutputVoltage((uint)((Mppts[(byte)i].DeviceId << 4) + ElmarBase.BaseId + (byte)CommandId.MaxOutputVoltage), values[i]);
 
 			ServiceBase.Write(packet.ToCanFrame());
 		}

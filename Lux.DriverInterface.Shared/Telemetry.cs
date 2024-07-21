@@ -16,4 +16,17 @@ public class Telemetry
 	public byte CabinHumiditiy { get; set; }
 	public float RealBrakePressure1 { get; set; }
 	public float RealBrakePressure2 { get; set; }
+
+	public List<string> Warnings => GetWarnings();
+
+	private List<string> GetWarnings()
+	{
+		List<string> warnings = [];
+		if (TemperatureWarning && !TemperatureCritical)
+			warnings.Add("Warning: High Cabin Temp");
+		if (TemperatureCritical)
+			warnings.Add("Critical: High Cabin Temp");
+
+		return warnings;
+	}
 }

@@ -16,6 +16,7 @@ builder.Services.AddSingleton(sp => new HttpClient { BaseAddress = new Uri(build
 builder.Services.AddSingleton<WaveSculptor>();
 builder.Services.AddSingleton<Telemetry>();
 builder.Services.AddSingleton<Encoder>();
+builder.Services.AddSingleton<Battery>();
 builder.Services.AddSingleton<MpptCollection>();
 builder.Services.AddSingleton<PeripheralCollection>();
 builder.Services.AddSingleton<SteeringWheel>();

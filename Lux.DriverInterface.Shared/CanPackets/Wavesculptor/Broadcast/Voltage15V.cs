@@ -10,21 +10,22 @@ using System.Threading.Tasks;
 namespace Lux.DriverInterface.Shared.CanPackets.WaveSculptor.Broadcast;
 public struct Voltage15V(float reserved, float voltage15) : IReadableCanPacket<Voltage15V>
 {
-    public static uint CanId => WaveSculptorBase.BroadcastBaseId + (uint)BroadcastId.Voltage15V;
-    public readonly uint Id => CanId;
-    public static bool IsExtended => false;
-    public static int Size => 8;
+	public static uint CanId => WaveSculptorBase.BroadcastBaseId + (uint)BroadcastId.Voltage15V;
+	public readonly uint Id => CanId;
+	public static bool IsExtended => false;
+	public static int Size => 8;
 
-    /// <summary>
-    /// Reserved
-    /// </summary>
-    public float Reserved { get; set; } = reserved;
-    /// <summary>
-    /// Actual voltage level of the 15V power rail
-    /// </summary>
-    public float Voltage15 { get; set; } = voltage15;
+	/// <summary>
+	/// Reserved
+	/// </summary>
+	public float Reserved { get; set; } = reserved;
+	/// <summary>
+	/// Actual voltage level of the 15V power rail
+	/// </summary>
+	[FieldLabel("(V)")] 
+	public float Voltage15 { get; set; } = voltage15;
 
-    public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
+	public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
 
 	static bool IReadableCanPacket.TryRead(uint id, bool extended, ReadOnlySpan<byte> data, [NotNullWhen(true)] out IReadableCanPacket? readableCanPacket)
 	{
@@ -39,7 +40,7 @@ public struct Voltage15V(float reserved, float voltage15) : IReadableCanPacket<V
 	}
 
 	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out Voltage15V packet)
-    {
+	{
 		if (!IsValidId(id, isExtended) || data.Length < Size)
 		{
 			packet = default;
@@ -50,9 +51,9 @@ public struct Voltage15V(float reserved, float voltage15) : IReadableCanPacket<V
 		ReadOnlySpan<byte> a = MemoryMarshal.CreateReadOnlySpan(in data[0], Size);
 
 		float reserved = BinaryPrimitives.ReadSingleLittleEndian(a);
-        float voltage15 = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
+		float voltage15 = BinaryPrimitives.ReadSingleLittleEndian(a.Slice(sizeof(float)));
 
-        packet = new Voltage15V(reserved, voltage15);
-        return true;
-    }
+		packet = new Voltage15V(reserved, voltage15);
+		return true;
+	}
 }

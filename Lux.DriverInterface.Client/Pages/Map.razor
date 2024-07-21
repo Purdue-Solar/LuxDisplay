@@ -1,4 +1,4 @@
-﻿@page "/testing"
+﻿@page "/map"
 @using BlazorBootstrap;
 @using Lux.DriverInterface.Shared;
 @using static Lux.DriverInterface.Shared.Shared;
@@ -8,12 +8,14 @@
 @inject NavigationManager NavigationManager
 @inject HttpClient http
 
-<PageTitle>Testing</PageTitle>
-<Header />
+<Header></Header>
+
+<div class="container">
+	<img src="/img/ncm_fullcourse.jpg" width="960"/>
+</div>
 
 @code
 {
-
 	protected CancellationTokenSource CancellationSource { get; } = new();
 
 	// Not called On page change, but called when the component is no longer needed

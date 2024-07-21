@@ -18,10 +18,12 @@ public readonly struct Temperature(uint id, float mosfetTemp, float controllerTe
 	/// <summary>
 	/// Temperature of the MOSFET (deg Celcius)
 	/// </summary>
+	[FieldLabel("(deg C)")] 
 	public float MosfetTemperature { get; } = mosfetTemp;
 	/// <summary>
 	/// Temperature of the controller (deg Celcius)
 	/// </summary>
+	[FieldLabel("(deg C)")] 
 	public float ControllerTemperature { get; } = controllerTemp;
 
 	public static bool IsValidId(uint id, bool extended) => !extended && (id & ElmarBase.BaseMessageMask) == ElmarBase.BaseId + (uint)BroadcastId.Temperature;

@@ -16,14 +16,16 @@ public struct VelocityMeasurement(float motorVelocity, float vehicleVelocity) : 
     public static bool IsExtended => false;
     public static int Size => 8;
 
-    /// <summary>
-    /// Motor velocity in RPM
-    /// </summary>
-    public float MotorVelocity { get; set; } = motorVelocity;
-    /// <summary>
-    /// Vehicle velocity in m/s
-    /// </summary>
-    public float VehicleVelocity { get; set; } = vehicleVelocity;
+	/// <summary>
+	/// Motor velocity in RPM
+	/// </summary>
+	[FieldLabel("(rpm)")] 
+	public float MotorVelocity { get; set; } = motorVelocity;
+	/// <summary>
+	/// Vehicle velocity in m/s
+	/// </summary>
+	[FieldLabel("(m/s)")] 
+	public float VehicleVelocity { get; set; } = vehicleVelocity;
 
     public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
 

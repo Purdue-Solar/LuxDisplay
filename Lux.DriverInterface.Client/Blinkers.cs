@@ -6,7 +6,7 @@ namespace Lux.DriverInterface.Client;
 public class Blinkers : IDisposable
 {
     public static readonly IconColor OnColor = IconColor.Warning;
-    public static readonly IconColor OffColor = IconColor.Muted;
+    public static readonly IconColor OffColor = IconColor.White;
 
     protected SteeringWheel SteeringWheel { get; }
 
@@ -29,7 +29,8 @@ public class Blinkers : IDisposable
 
     private void BlinkTimer(object state)
     {
-        _blinker = !_blinker;
+        //_blinker = !_blinker;
+        _blinker = true;    // Always On
 
         if (SteeringWheel.HazardsActive)
         {

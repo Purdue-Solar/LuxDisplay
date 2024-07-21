@@ -15,14 +15,16 @@ public struct BackEmf(float bemfQ, float bemfD) : IReadableCanPacket<BackEmf>
     public static bool IsExtended => false;
     public static int Size => 8;
 
-    /// <summary>
-    /// The peak of the phase to neutral motor voltage (V)
-    /// </summary>
-    public float BemfQ { get; set; } = bemfQ;
-    /// <summary>
-    /// By definition this value is always 0 (V)
-    /// </summary>
-    public float BemfD { get; set; } = bemfD;
+	/// <summary>
+	/// The peak of the phase to neutral motor voltage (V)
+	/// </summary>
+	[FieldLabel("(V)")] 
+	public float BemfQ { get; set; } = bemfQ;
+	/// <summary>
+	/// By definition this value is always 0 (V)
+	/// </summary>
+	[FieldLabel("(V)")] 
+	public float BemfD { get; set; } = bemfD;
 
     public static bool IsValidId(uint id, bool extended) => !extended && id == CanId;
 
