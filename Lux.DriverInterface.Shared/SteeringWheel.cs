@@ -16,6 +16,8 @@ public class SteeringWheel
 	public bool CruiseUpActive { get; set; }
 	public bool CruiseDownActive { get; set; }
 	public bool HornActive { get; set; }
+	public bool ForwardActive { get; set; }
+	public bool ReverseActive { get; set; }
 	public byte Page { get; set; }
 	public float TargetSpeed { get; set; }
 }

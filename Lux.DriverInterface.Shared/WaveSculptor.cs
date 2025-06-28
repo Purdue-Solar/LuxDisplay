@@ -51,6 +51,8 @@ public class WaveSculptor : IWarningGenerator
 
 	public const float WarningCurrent = 20;
 	public const float CriticalCurrent = 24;
+	public const float WarningMotorTemperature = 55;
+	public const float CriticalMotorTemperature = 60;
 
 	public List<Warning> GetWarnings()
 	{
@@ -70,6 +72,10 @@ public class WaveSculptor : IWarningGenerator
 			warnings.Add(new Warning(WarningType.Critical, "Critical: Motor Over Current"));
 		if (ErrorFlags.HasFlag(ErrorFlags.DesaturationFault))
 			warnings.Add(new Warning(WarningType.Critical, "Critical: Desaturation Fault"));
+		if (HeatsinkTemp >= WarningMotorTemperature && HeatsinkTemp < CriticalMotorTemperature)
+			warnings.Add(new Warning(WarningType.Warning, "Warning: High Motor Controller Temp"));
+		if (HeatsinkTemp > CriticalMotorTemperature)
+			warnings.Add(new Warning(WarningType.Critical, "Critical: High Motor Controller Temp"));
 
 		return warnings;
 	}

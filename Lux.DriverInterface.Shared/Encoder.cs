@@ -12,7 +12,9 @@ namespace Lux.DriverInterface.Shared
 		public ushort Value { get; set; } = 0;
 		public float Percentage { get; set; } = 0;
 		public PedalState State { get; set; } = PedalState.Neutral;
-		public ControlMode Mode { get; set; } = ControlMode.Speed; 
+		public ControlMode Mode { get; set; } = ControlMode.Speed;
+
+		public double RpmToMph { get; set; } = 0;
 
 		public enum PedalState
 		{

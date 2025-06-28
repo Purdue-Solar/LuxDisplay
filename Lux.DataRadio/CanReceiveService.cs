@@ -92,6 +92,8 @@ namespace Lux.DataRadio
 				SteeringWheel.CruiseUpActive = (buttons & SteeringStatus.ButtonFlags.CruiseUp) != 0;
 				SteeringWheel.CruiseDownActive = (buttons & SteeringStatus.ButtonFlags.CruiseDown) != 0;
 				SteeringWheel.HornActive = (buttons & SteeringStatus.ButtonFlags.Horn) != 0;
+				SteeringWheel.ForwardActive = (buttons & SteeringStatus.ButtonFlags.Forward) != 0;
+				SteeringWheel.ReverseActive = (buttons & SteeringStatus.ButtonFlags.Reverse) != 0;
 
 				SteeringWheel.Page = status.Page;
 
@@ -338,10 +340,11 @@ namespace Lux.DataRadio
 				Battery.PackPower = status.PackKwPower * Status2.PackKwPowerFactor;
 			});
 
-			Decoder.AddPacketDecoder((PackAmpHours packAmpHours) =>
+			Decoder.AddPacketDecoder((PackAmpHoursFaults packAmpHours) =>
 			{
-				Battery.PackAmpHours = packAmpHours.AmpHours * PackAmpHours.AmpHoursFactor;
-				Battery.AdaptivePackAmpHours = packAmpHours.AdaptiveAmpHours * PackAmpHours.AmpHoursFactor;
+				Battery.PackAmpHours = packAmpHours.AmpHours * PackAmpHoursFaults.AmpHoursFactor;
+				Battery.AdaptivePackAmpHours = packAmpHours.AdaptiveAmpHours * PackAmpHoursFaults.AmpHoursFactor;
+				Battery.FaultCodes |= packAmpHours.FaultCodes;
 			});
 
 			Decoder.AddPacketDecoder((CellVoltageAndTemperature cellVoltages) =>

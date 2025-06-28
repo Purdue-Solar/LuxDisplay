@@ -58,10 +58,12 @@
 	{
 		get
 		{
-			return encoder.State switch
+			int state = (steering.ForwardActive ? 1 : 0) | (steering.ReverseActive ? 2 : 0);
+
+			return state switch
 			{
-				Encoder.PedalState.Forward => 'F',
-				Encoder.PedalState.Reverse => 'R',
+				1 => 'F',
+				2 => 'R',
 				_ => 'N'
 			};
 		}

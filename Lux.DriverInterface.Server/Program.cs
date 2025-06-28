@@ -27,6 +27,7 @@ builder.Services.AddSingleton<CanDecoder>();
 
 builder.Services.AddSingleton<IPacketQueue, PacketQueue>();
 builder.Services.AddSingleton<RadioService>();
+builder.Services.AddHostedService<StateOfChargeService>();
 
 if (Environment.OSVersion.Platform == PlatformID.Unix)
 {
@@ -42,7 +43,7 @@ builder.Services.AddSingleton<CanSendService>();
 builder.Services.AddHostedService<CanReceiveService>();
 
 builder.Services.AddSingleton<GpioWrapper>();
-builder.Services.AddHostedService<PedalService>();
+//builder.Services.AddHostedService<PedalService>();
 builder.Services.AddHostedService<CanAutoSender>();
 
 builder.Services.AddBlazorBootstrap(); // Add this line

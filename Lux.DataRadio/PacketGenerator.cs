@@ -16,6 +16,7 @@ using System.Runtime.InteropServices.ObjectiveC;
 using Lux.DriverInterface.Shared.CanPackets.Distribution;
 using Lux.DriverInterface.Shared.CanPackets.Elmar;
 using Lux.DriverInterface.Shared.CanPackets.Elmar.Broadcast;
+using Lux.DriverInterface.Shared.CanPackets.Battery;
 
 namespace Lux.DataRadio;
 public interface IPacketQueue
@@ -60,7 +61,7 @@ public class PacketGeneratorService(IPacketQueue queue) : BackgroundService
 	{
 		if (state is not Random rand)
 			return;
-		WaveSculptorStatus wsStatus = new WaveSculptorStatus((WaveSculptorStatus.LimitFlags)(rand.Next() & ((1 << 6) - 1)), (WaveSculptorStatus.ErrorFlags)(rand.Next() & ((1 << 9) - 1)), 0, 0, 0);
+		WaveSculptorStatus wsStatus = new WaveSculptorStatus(0, 0, 0, 0, 0);
 		Queue.Enqueue(wsStatus.ToCanFrame());
 	}
 
@@ -111,7 +112,7 @@ public class PacketGeneratorService(IPacketQueue queue) : BackgroundService
 			return;
 
 		PsrCanId id = new PsrCanId(PsrCanId.MulticastDestination, CanIds.DistributionBase, (byte)DriverInterface.Shared.CanPackets.Distribution.MessageId.Status, CanIds.DeviceType.Distribution, CanIds.MessagePriority.Normal);
-		DistributionStatus packet = new DistributionStatus(id.ToInteger(), DistributionStatus.StatusFlags.Mask & (DistributionStatus.StatusFlags)rand.Next());
+		DistributionStatus packet = new DistributionStatus(id.ToInteger(), DistributionStatus.StatusFlags.Mask & (DistributionStatus.StatusFlags.DcDcValid));
 		Queue.Enqueue(packet.ToCanFrame());
 	}
 
@@ -163,6 +164,15 @@ public class PacketGeneratorService(IPacketQueue queue) : BackgroundService
 		Queue.Enqueue(powers.ToCanFrame());
 	}
 
+	private void GenerateBatteryStatus1(object? state)
+	{
+		if (state is not Random rand)
+			return;
+
+		Status1 packet = new Status1((short)rand.Next(50, 100), (ushort)rand.Next(960, 1150), 100, Status1.RelayState.ChargeEnable | Status1.RelayState.DischargeEnable, 0, 30);
+		Queue.Enqueue(packet.ToCanFrame());
+	}
+
 	protected override async Task ExecuteAsync(CancellationToken stoppingToken)
 	{
 		using Timer wsStatusTimer = new Timer(GenerateWSStatusPacket, new Random(), TimeSpan.Zero, TimeSpan.FromMilliseconds(200));
@@ -178,6 +188,9 @@ public class PacketGeneratorService(IPacketQueue queue) : BackgroundService
 		using Timer distributionCurrents = new Timer(GenerateDistributionCurrents, new Random(), TimeSpan.FromMilliseconds(40), TimeSpan.FromMilliseconds(100));
 		using Timer distributionPowers = new Timer(GenerateDistributionPowers, new Random(), TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100));
 
+		using Timer batteryStatus1 = new Timer(GenerateBatteryStatus1, new Random(), TimeSpan.FromMilliseconds(60), TimeSpan.FromMilliseconds(100));
+		using Timer batteryStatus2 = new Timer((object? state) => Queue.Enqueue(new Status2(30, 15, 25, 32, Status2.CurrentLimitStatus.None, 1500).ToCanFrame()) , new Random(), TimeSpan.FromMilliseconds(70), TimeSpan.FromMilliseconds(100));
+
 		using Timer trashStandard = new Timer(obj =>
 		{
 			if (obj is not Random rand)
@@ -186,7 +199,7 @@ public class PacketGeneratorService(IPacketQueue queue) : BackgroundService
 			uint id = (uint)rand.Next(0, 0x7FF);
 			rand.NextBytes(bytes);
 			Queue.Enqueue(new CanFrame(id, bytes));
-		}, new Random(), TimeSpan.Zero, TimeSpan.FromMilliseconds(1));
+		}, new Random(), TimeSpan.Zero, TimeSpan.FromMilliseconds(5));
 
 		using Timer trashExtended = new Timer(obj =>
 		{
@@ -196,7 +209,7 @@ public class PacketGeneratorService(IPacketQueue queue) : BackgroundService
 			uint id = (uint)rand.Next(0, 0x1FFFFFFF) | 0x80000000;
 			rand.NextBytes(bytes);
 			Queue.Enqueue(new CanFrame(id, bytes));
-		}, new Random(), TimeSpan.Zero, TimeSpan.FromMilliseconds(1));
+		}, new Random(), TimeSpan.Zero, TimeSpan.FromMilliseconds(5));
 
 		await Task.Delay(-1, stoppingToken);
 	}

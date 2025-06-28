@@ -30,9 +30,10 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 	private double Deadzone { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(Deadzone)}", 2.5);
 	private double FullAngle { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(FullAngle)}", 20.0);
 	private double MaxSpeed { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(MaxSpeed)}", 60.0);
-	private double WheelDiamater { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(WheelDiamater)}", 0.5);
+	private double WheelDiamater { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(WheelDiamater)}", 0.59);
 	private double WheelCircumference => Math.PI * WheelDiamater;
 	private double MaxRpm => MaxSpeed * Conversions.MphToMps / WheelCircumference * 60;
+	public double RpmToMph => WheelCircumference / 60 * Conversions.MpsToMph;
 	private double ReverseMultiplier { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(ReverseMultiplier)}", 1.0);
 
 	private Encoder.ControlMode ControlMode { get; } = config.GetValue($"{nameof(PedalService)}:{nameof(ControlMode)}", Encoder.ControlMode.Speed);
@@ -74,6 +75,8 @@ public class PedalService(Encoder amt, SteeringWheel steering, CanSendService ca
 
 	private void HandlePedal(object? state)
 	{
+		Amt.RpmToMph = RpmToMph;
+
 		if (Spi is null)
 			return;
 

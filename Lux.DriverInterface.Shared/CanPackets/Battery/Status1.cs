@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Lux.DriverInterface.Shared.CanPackets.Battery;
-public readonly struct Status1(short current, ushort voltage, byte soc, Status1.RelayState relayState, Status1.FailsafeStatus failsafeStatus, byte averageTemperature) : IReadableCanPacket<Status1>
+public readonly struct Status1(short current, ushort voltage, byte soc, Status1.RelayState relayState, Status1.FailsafeStatus failsafeStatus, byte averageTemperature) : IReadableCanPacket<Status1>, IWriteableCanPacket<Status1>
 {
 	public const uint CanId = 0x200;
 	public uint Id => CanId;
@@ -60,6 +60,26 @@ public readonly struct Status1(short current, ushort voltage, byte soc, Status1.
 		return true;
 	}
 
+	public bool TryWrite(Span<byte> data, out int written)
+	{
+		if (data.Length < Size)
+		{
+			written = 0;
+			return false;
+		}
+
+		Span<byte> a = MemoryMarshal.CreateSpan(ref data[0], Size);
+		BinaryPrimitives.WriteInt16LittleEndian(data, Current);
+		BinaryPrimitives.WriteUInt16LittleEndian(data.Slice(2), Voltage);
+		a[4] = StateOfCharge;
+		a[5] = (byte)Relays;
+		a[6] = (byte)Failsafe;
+		a[7] = AverageTemperature;
+
+		written = Size;
+		return true;
+	}
+
 	public static bool TryRead(uint id, bool isExtended, ReadOnlySpan<byte> data, out Status1 packet)
 	{
 		if (data.Length < Size || !IsValidId(id, isExtended))
@@ -68,7 +88,7 @@ public readonly struct Status1(short current, ushort voltage, byte soc, Status1.
 			return false;
 		}
 
-		ReadOnlySpan<byte> a = MemoryMarshal.CreateReadOnlySpan(data[0], Size);
+		ReadOnlySpan<byte> a = MemoryMarshal.CreateReadOnlySpan(in data[0], Size);
 
 		short current = BinaryPrimitives.ReadInt16LittleEndian(a);
 		ushort voltage = BinaryPrimitives.ReadUInt16LittleEndian(a.Slice(2));

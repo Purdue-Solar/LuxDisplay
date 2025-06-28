@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Lux.DriverInterface.Shared.CanPackets.Battery;
-public readonly struct Status2(byte packDcl, byte packCcl, byte lowTemperature, byte highTemperature, Status2.CurrentLimitStatus currentLimits, short packKwPower) : IReadableCanPacket<Status2>
+public readonly struct Status2(byte packDcl, byte packCcl, byte lowTemperature, byte highTemperature, Status2.CurrentLimitStatus currentLimits, short packKwPower) : IReadableCanPacket<Status2>, IWriteableCanPacket<Status2>
 {
 	public const uint CanId = 0x201;
 	public uint Id => CanId;
@@ -56,6 +56,27 @@ public readonly struct Status2(byte packDcl, byte packCcl, byte lowTemperature, 
 		}
 
 		readableCanPacket = packet;
+		return true;
+	}
+
+	public bool TryWrite(Span<byte> data, out int written)
+	{
+		if (data.Length < Size)
+		{
+			written = 0;
+			return false;
+		}
+
+		Span<byte> a = MemoryMarshal.CreateSpan(ref data[0], Size);
+		
+		a[0] = PackDcl;
+		a[1] = PackCcl;
+		a[2] = LowTemperature;
+		a[3] = HighTemperature;
+		BinaryPrimitives.WriteUInt16LittleEndian(a.Slice(4), (ushort)CurrentLimits);
+		BinaryPrimitives.WriteInt16LittleEndian(a.Slice(6), PackKwPower);
+
+		written = Size;
 		return true;
 	}
 

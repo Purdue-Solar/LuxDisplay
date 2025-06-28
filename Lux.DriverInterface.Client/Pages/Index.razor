@@ -38,7 +38,10 @@
 			<div class="label">A</div>
 		</div>
 		<div class="additional-speedometer">
-			<div class="value">@((-battery.Current).ToString("N1"))</div>
+			@{
+				float current = -battery.Current;
+			}
+			<div class="value">@(current > 0 ? "+" : string.Empty)@(current.ToString("N1"))</div>
 			<div class="label">Battery (A)</div>
 		</div>
 	</div>
@@ -56,17 +59,17 @@
 		<div class="symbol"><h4>Battery Temperature: @battery.HighTemperature&degC</h4></div>
 	</div>
 	<div class="row-data">
-		@foreach(var warning in battery.GetWarnings())
-		{
-			<div class="warning-col">
-				<h5 class="@(warning.WarningType == WarningType.Warning ? "text-warning" : "error")">@warning.Message</h5>
-			</div>
+		@{
+			IWarningGenerator[] generators = [battery, ws, mppts];
 		}
-		@foreach (var warning in ws.GetWarnings())
+		@foreach (IWarningGenerator warningGenerator in generators)
 		{
-			<div class="warning-col">
-				<h5 class="@(warning.WarningType == WarningType.Warning ? "text-warning" : "error")">@warning.Message</h5>
-			</div>
+			foreach (var warning in warningGenerator.GetWarnings())
+			{
+				<div class="warning-col">
+					<h5 class="@(warning.WarningType == WarningType.Warning ? "text-warning" : "error")">@warning.Message</h5>
+				</div>
+			}
 		}
 	</div>
 	@*<div class="row-data">
@@ -74,9 +77,6 @@
 	</div>*@
 </div>
 <div class="bottom-info">
-	<div class="bottom-info-item">
-		Pedal Percent: @encoder.Percentage.ToString("P0")
-	</div>
 	<div class="bottom-info-item">
 		Motor Errors: @ws.ErrorFlags
 	</div>

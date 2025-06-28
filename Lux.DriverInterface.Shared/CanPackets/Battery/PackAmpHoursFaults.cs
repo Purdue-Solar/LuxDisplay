@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Lux.DriverInterface.Shared.CanPackets.Battery;
-public readonly struct PackAmpHours(ushort packAmpHours, ushort adaptiveAmpHours) : IReadableCanPacket<PackAmpHours>
+public readonly struct PackAmpHoursFaults(ushort packAmpHours, ushort adaptiveAmpHours, PackAmpHoursFaults.DtcCodes dtcCodes) : IReadableCanPacket<PackAmpHoursFaults>
 {
 	public const uint CanId = 0x202;
 	public uint Id => CanId;
@@ -28,6 +28,8 @@ public readonly struct PackAmpHours(ushort packAmpHours, ushort adaptiveAmpHours
 	[FieldLabel("(Ah)")]
 	public ushort AdaptiveAmpHours { get; } = adaptiveAmpHours;
 
+	public DtcCodes FaultCodes { get; } = dtcCodes;
+
 	public static bool IsExtended => false;
 	public static int Size => 8;
 
@@ -45,7 +47,7 @@ public readonly struct PackAmpHours(ushort packAmpHours, ushort adaptiveAmpHours
 		return true;
 	}
 
-	public static bool TryRead(uint id, bool extended, ReadOnlySpan<byte> data, out PackAmpHours packet)
+	public static bool TryRead(uint id, bool extended, ReadOnlySpan<byte> data, out PackAmpHoursFaults packet)
 	{
 		if (data.Length < Size || !IsValidId(id, extended))
 		{
@@ -57,9 +59,39 @@ public readonly struct PackAmpHours(ushort packAmpHours, ushort adaptiveAmpHours
 
 		ushort ampHours = BinaryPrimitives.ReadUInt16LittleEndian(a);
 		ushort adaptiveAmpHours = BinaryPrimitives.ReadUInt16LittleEndian(a.Slice(2));
+		DtcCodes dtcCodes = (DtcCodes)BinaryPrimitives.ReadUInt32LittleEndian(a.Slice(4));
 
-		packet = new PackAmpHours(ampHours, adaptiveAmpHours);
+		packet = new PackAmpHoursFaults(ampHours, adaptiveAmpHours, dtcCodes);
 		return true;
 	}
 
+	[Flags]
+	public enum DtcCodes : uint
+	{
+		DischargeLimitEnforcementFault = 1 << 0,
+		ChargerSafetyRelayFault = 1 << 1,
+		InternalHardwareFault = 1 << 2,
+		InternalHeatsinkThermistor = 1 << 3,
+		InternalSoftwareFault = 1 << 4,
+		HighestCellVoltageTooHighFault = 1 << 5,
+		LowestCellVoltageTooLowFault = 1 << 6,
+		PackTooHotFault = 1 << 7,
+		// 8-15 reserved
+		InternalCommunicationFault = 1 << 16,
+		CellBalancingStuckOffFault = 1 << 17,
+		WeakCellFault = 1 << 18,
+		LowCellVoltageFault = 1 << 19,
+		OpenWiringFault = 1 << 20,
+		CurrentSensor = 1 << 21,
+		HighestCellVoltageOver5VFault = 1 << 22,
+		CellAsicFault = 1 << 23,
+		WeakPackFault = 1 << 24,
+		FanMonitorFault = 1	<< 25,
+		ThermistorFault = 1 << 26,
+		ExternalCommunicationFault = 1 << 27,
+		RedundantPowerSupplyFault = 1 << 28,
+		HighVoltageIsolationFault = 1 << 29,
+		InputPowerSupplyFault = 1 << 30,
+		ChargeLimitEnforcementFault = 1U << 31
+	}
 }

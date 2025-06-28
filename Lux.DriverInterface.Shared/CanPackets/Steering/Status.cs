@@ -88,6 +88,8 @@ public readonly struct Status(uint id, Status.ButtonFlags buttons, byte page, by
 		Cruise = 1 << 5,
 		CruiseUp = 1 << 6,
 		CruiseDown = 1 << 7,
-		Horn = 1 << 8
+		Horn = 1 << 8,
+		Forward = 1 << 9,
+		Reverse = 1 << 10
 	}
 }

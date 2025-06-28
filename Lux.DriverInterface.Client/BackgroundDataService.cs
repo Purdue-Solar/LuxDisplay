@@ -258,6 +258,7 @@ public class BackgroundDataService(HttpClient http, Battery battery, Telemetry t
 				Encoder.Value = response.Value;
 				Encoder.State = response.State;
 				Encoder.Mode = response.Mode;
+				Encoder.RpmToMph = response.RpmToMph;
 
 				OnChange?.Invoke();
 			}
