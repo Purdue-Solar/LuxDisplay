@@ -48,13 +48,13 @@
 	<div class="row-data">
 		<h1 style="@(!steering.CruiseActive ? "color: white" : string.Empty)">Cruise Control: @((int)(steering.TargetSpeed * Conversions.MpsToMph)) mph</h1>
 	</div>
-	<div class="row-data">
+	@* <div class="row-data">
 		<div class="symbol"><h1><Icon Name="IconName.Battery" Color="IconColor.Muted" /></h1></div>
 		<div class="symbol"><h1><Icon Name="IconName.BrightnessHigh" Color="IconColor.Muted" /></h1></div>
 		<div class="symbol"><h1><Icon Name="IconName.ExclamationTriangle" Color="IconColor.Muted" /></h1></div>
 		<div class="symbol"><h1><Icon Name="IconName.Gear" Color="IconColor.Muted" /></h1></div>
 		<div class="symbol"><h1><Icon Name="IconName.ThermometerHigh" Color="IconColor.Muted" /></h1></div>
-	</div>
+	</div> *@
 	<div class="row-data">
 		<div class="symbol"><h4>Battery Temperature: @battery.HighTemperature&degC</h4></div>
 	</div>
